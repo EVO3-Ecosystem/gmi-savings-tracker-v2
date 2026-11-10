@@ -1,0 +1,45 @@
+# Pipeline definition for DVC (decision register #7).
+# Local-only: the default remote is `localstore` (../gmi-dvc-store, see .dvc/config) — no cloud.
+# `dvc repro` runs the same entry points as the Makefile; `data/` stays git-ignored as before
+# (.gitignore) and is versioned by DVC into the local store instead.
+stages:
+  extract:
+    desc: SODA pulls + context sources; raw Parquet per run, freshness check on rowsUpdatedAt
+    cmd: python -m src.pipeline.extract
+    deps:
+      - src/pipeline/extract.py
+      - src/pipeline/enrich.py
+      - config/datasets.yaml
+    outs:
+      - data/raw
+      - data/runs.csv
+  build:
+    desc: DuckDB layers (raw/ref/core/mart/ops); a failed stop check exits non-zero and keeps the last good database
+    cmd: python -m src.pipeline.build
+    deps:
+      - src/pipeline/build.py
+      - src/pipeline/checks.py
+      - src/pipeline/reference.py
+      - src/pipeline/marts.py
+      - sql/mart
+      - reference
+      - data/raw
+    outs:
+      - data/md_transparency.duckdb
+      - data/check_history.csv
+  checks:
+    desc: Test suite gate — build.py's stop checks run inside the build stage; this re-verifies with pytest (CI parity)
+    cmd: python -m pytest -q tests
+    deps:
+      - tests
+      - data/md_transparency.duckdb
+  export:
+    desc: Dashboard CSVs; refused unless every stop check passed and parity has no unexplained difference
+    cmd: python -m src.pipeline.export
+    deps:
+      - src/pipeline/export.py
+      - src/pipeline/gate.py
+      - config/dashboard.yaml
+      - data/md_transparency.duckdb
+    outs:
+      - data/export

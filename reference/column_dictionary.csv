@@ -1,0 +1,484 @@
+column,applies_to,origin,definition
+fiscal_year,,portal,"Maryland fiscal year (July 1 to June 30), named for the year it ends"
+fiscalyear,raw.grants,portal,Fiscal year in the grants dataset (renamed fiscal_year in core)
+fiscal_period,raw.payments,portal,Accounting period; the portal fills it with a placeholder value so it is not used
+fiscalperiod,raw.grants,portal,Accounting period in the grants dataset; not used
+date,,portal,Portal date column; a placeholder (fiscal year end) rather than the payment or award date; not used
+category,raw.payments,portal,Payment category as published by the portal
+category,"raw.grants,core.fact_grant",portal,Grant or Loan
+category,"raw.budget,raw.fund,raw.highered",portal,Budget function code (renamed function_code in core)
+category_title,,portal,Budget function title (renamed function_name in core)
+type,raw.budget,portal,Budget stage label published by the portal; out of date for recent years so ref.dim_stage is used instead
+type,"ref.gmi_reported_savings,d_savings",reference,"Kind of saving GMI reported: year over year, one-time, cost avoidance"
+agency_code,,portal,Three-character State budget agency code (for example D50); the key that joins budget and payments
+agency_name,,portal,Agency name as published; in core the code suffix the portal adds in some years is removed
+agency_code_as_paid,core.fact_payment*,derived,Agency code when the payments dataset carries one in the name; otherwise empty
+agency_name_as_paid,,derived,Agency name exactly as it appears in the payments dataset
+agency,,derived,Agency name shown on the dashboard
+agency_title,core.mfr_document,source,Agency name on the Managing for Results plan's web page
+agency_file,,source,File name of an agency's Managing for Results plan PDF
+agency_subobject_code,"raw.budget,raw.highered",portal,Agency-specific spending code; not used (Comptroller sub-object is used)
+agency_subobject_name,"raw.budget,raw.highered",portal,Agency-specific spending code name; not used
+unit_code,,portal,Budget unit code within an agency
+unit_name,,portal,Budget unit name
+program_code,,portal,"Budget program code, two digits in core"
+program_name,,portal,Budget program name
+subprogram_code,,portal,Budget subprogram code
+subprogram_name,,portal,Budget subprogram name
+organization_code,,portal,Portal's combined agency-unit-program code
+organization_sub_code,raw.budget,portal,Portal's combined code including subprogram
+object_code,,portal,"Comptroller object code, two digits (for example 08 Contractual services)"
+object_name,,portal,Comptroller object name
+comptroller_subobject_code,"raw.budget,raw.highered",portal,Comptroller sub-object (detailed spending) code; renamed subobject_code in core
+comptroller_subobject_name,"raw.budget,raw.highered",portal,Comptroller sub-object name; renamed subobject_name in core
+subobject_code,,derived,Comptroller sub-object code without leading zeros
+subobject_name,,derived,Comptroller sub-object name
+code,f_code,derived,Comptroller sub-object code
+spending_code,,derived,Comptroller sub-object name (with code) shown on the dashboard
+fund_type,,derived,"Fund type (General, Special, Federal, Reimbursable and so on)"
+fund_type_name,,portal,Fund type name as published
+fund_source_code,,portal,Fund source code within a fund type
+fund_source_name,,portal,Fund source name
+budget,,portal,Dollars budgeted or spent (actual years) on the row; nominal dollars
+count,raw.fte,portal,Budgeted full-time-equivalent positions (renamed fte in core)
+count,"ref.gmi_reported_savings,d_savings",reference,Number of contracts or items GMI reported in the saving (text)
+description,"raw.budget,raw.fund",portal,Portal description column; not used
+description,raw.grants,portal,Grant or loan purpose as written by the grantor
+fte,,derived,Budgeted full-time-equivalent positions
+vendor_name,raw.payments,portal,Payee name as published; includes businesses and individuals
+vendor_name_as_paid,,derived,Payee name exactly as published in payments
+vendor_zip,,portal,Payee ZIP code as published
+zipcode,raw.grants,portal,Grantee ZIP code as published
+amount,,portal,"Dollars paid, awarded or reported on the row; nominal dollars"
+grantor,,portal,State agency and program awarding the grant or loan
+grantee,,portal,Recipient of the grant or loan
+nonprofit,,portal,Y when the portal marks the grantee as a non-profit
+function_code,,derived,Budget function code (from the portal's category)
+function_name,,derived,Budget function title (from the portal's category_title)
+portal_type,,derived,The portal's own stage label kept for comparison with the confirmed stage
+stage,,reference,"Confirmed budget stage for the fiscal year (Actual, Working, Legislative Appropriation) from ref.budget_stage, or the pipeline layer in run_checks"
+official_stage,"stage_evidence,ref.stage_evidence",reference,Stage DBM's budget books assign to the year
+file_label,"stage_evidence,ref.stage_evidence",portal,Stage label the portal file assigned to the year
+evidence,"stage_evidence,ref.stage_evidence",source,Where in DBM's budget books the stage is confirmed
+evidence,d_opps,derived,Plain-language reason the detector flagged the row
+evidence_url,,source,Link to the evidence document
+programs_compared,"stage_evidence,ref.stage_evidence",derived,Programs compared between the portal file and DBM's books
+programs_exact,"stage_evidence,ref.stage_evidence",derived,Programs whose totals match DBM's books exactly
+file_total,"stage_evidence,ref.stage_evidence",derived,Portal file total for the year
+dbm_actual_total,"stage_evidence,ref.stage_evidence",source,Actual total printed in DBM's budget books
+internal,core.fact_budget_scope,derived,True for transfers between State agencies (reimbursable funds) excluded from controllable spending
+entitlement,core.fact_budget_scope,derived,True for spending set by law or formula (for example Medicaid benefits) excluded from controllable spending
+controllable,,derived,"Controllable purchases: contractual services, supplies, equipment, rent and similar spending agencies can renegotiate, per reference/controllable_rules.csv"
+focus_area,,derived,One of GMI's six focus areas assigned by reference/focus_area_rules.csv; empty when none
+area,,derived,One of GMI's six focus areas
+scope,,derived,Spending scope bucket on the dashboard (controllable purchases or staff/grants/capital and so on)
+partial_year,"core.fact_payment*,mart.vendor_agency_year",derived,True for the latest payments year while it is still incomplete
+partial,,derived,True when the year is not finished
+reporting_incomplete,,derived,True when a federal-award year is under 60% of the prior year (reporting lag)
+federal_fy,,source,Federal fiscal year (October to September) from USAspending
+definition,core.fact_federal_award,source,What the federal award total includes (USAspending award types 02-05 to Maryland governments)
+definition,measures,derived,What the dashboard measure means
+calendar_year,,source,Calendar year of the Census population estimate
+population,,source,Maryland resident population (Census Population Estimates)
+vintage,,source,Census estimate vintage (release year)
+year,"raw.cpi,raw.population",source,Calendar year
+month,raw.cpi,source,Calendar month
+cpi,raw.cpi,source,"CPI-U, U.S. city average, all items, not seasonally adjusted (BLS CUUR0000SA0 / FRED CPIAUCNS)"
+cpi_avg,,derived,Average CPI-U over the fiscal year's months
+months,core.cpi_fy,derived,Months of CPI available for the fiscal year
+to_latest_dollars,,derived,Multiplier that converts the fiscal year's dollars to dollars of the latest full fiscal year
+dollars_of_fy,,derived,Fiscal year whose dollars to_latest_dollars converts to
+url,,source,Link to the source document
+bytes,,source,File size in bytes
+last_modified,,source,Last-Modified header the source server returned
+is_pdf,raw.mfr_index,derived,True when the downloaded file is a PDF
+plan_year,"core.mfr_measure,mart.agency_results",source,Fiscal year of the Managing for Results plan
+goal,"core.mfr_measure,mart.agency_results",source,Plan goal text
+objective,"core.mfr_measure,mart.agency_results",source,Plan objective text
+measure,"core.mfr_measure,mart.agency_results",source,Performance measure name as printed
+kind,"core.mfr_measure,mart.agency_results",source,"Actual or estimate, from the plan's column heading"
+kind,f_forecast,derived,"Actual, forecast or plan"
+value_text,"core.mfr_measure,mart.agency_results",source,Measure value exactly as printed
+value,"core.mfr_measure,mart.agency_results",derived,Measure value as a number
+value,ref.baseline_quality,reference,Baseline value recorded from the legacy dashboard
+value,"ref.controllable_rule,ref.focus_area_rule",reference,The code or pattern the rule matches
+value,d_master_quality,derived,Measured value
+value,f_forecast,derived,Actual or forecast spending in dollars
+measure,"ref.baseline_quality,d_master_quality",reference,Name of the quality measure
+measure,measures,derived,Column name of the dashboard measure
+_run_id,,ops,Extract run that produced the row
+run_id,,ops,"Pipeline run identifier, UTC timestamp YYYYMMDDTHHMMSSZ"
+built_utc,,ops,When the database was built (UTC)
+started_utc,,ops,When the run started (UTC)
+seconds,,ops,Run duration in seconds
+checks,,ops,Number of checks run
+passed,,ops,Checks passed
+warnings,,ops,Checks that warned
+failed,,ops,Checks that failed
+repairs,,ops,Datasets re-downloaded by self-healing
+mode,,ops,"Run mode (full, freshness reuse, test fault)"
+published,,ops,True when the run's outputs were published
+payment_rows,,ops,Payment rows in the run
+budget_rows,,ops,Budget rows in the run
+status,"pipeline_runs,ops.enrichment",ops,Run or source status
+status,run_checks,ops,"pass, warn or fail"
+status,d_savings_status,derived,"Whether the reported saving is seen in payments (Seen, Partly seen, Not seen yet, Payments fell, Payments did not fall)"
+status,"ref.gmi_reported_savings,d_savings",reference,Status GMI gave the item
+status,d_rec_status,derived,Status of the recommendation
+layer,,ops,"Database layer the check ran on (raw, core, ref, mart)"
+check,,ops,Check description
+severity,,ops,Stop (blocks the run) or Warn
+result,,ops,"pass, warn or fail"
+detail,,ops,Numbers behind the check result
+source,"ops.enrichment,ops.source_snapshot,raw.*",ops,Source name or URL the data came from
+source,"ref.budget_stage,ref.baseline_quality,ref.dim_stage",reference,Where the reference value is documented
+source,"ref.gmi_reported_savings,d_savings",reference,Citation for the reported saving
+source,sources,derived,Short name of the source dataset
+rows,,ops,Row count
+dataset,,ops,Short name of the source dataset
+dataset_id,,ops,Portal four-by-four identifier
+rows_downloaded,,ops,Rows in the downloaded file
+rows_portal,,ops,Rows the portal reported
+portal_count,,ops,Rows the portal reported with count(*)
+rows_updated_at,,ops,Portal rowsUpdatedAt (Unix seconds) used by the freshness check
+heal_attempts,,ops,Re-downloads needed to match the portal count
+total,,ops,Portal's own sum for the year
+title,sources,derived,Dataset title used on the dashboard
+title,d_rec_status,derived,Recommendation title
+portal_name,,ops,Dataset title as the portal publishes it
+portal_updated,,ops,Date the portal data last changed
+use,sources,derived,What the dataset contributes to the tracker
+years,sources,derived,Fiscal years used
+reconciled,sources,ops,True when downloaded rows equal the portal's count
+names_used,ref.dim_agency,derived,Distinct agency names seen for the code
+first_fy,,derived,First fiscal year the code appears
+last_fy,,derived,Last fiscal year the code appears
+min_code,ref.dim_function,derived,Lowest function code with the title
+max_code,ref.dim_function,derived,Highest function code with the title
+codes,ref.dim_function,derived,Function codes sharing the title
+rule,,reference,Name of the mapping or scope rule
+note,,reference,Explanation of the rule or row
+pattern,,reference,Regular expression the rule applies
+step,ref.vendor_normalization,reference,Order the normalization step runs in
+step,d_plan50,derived,Order of the step in the path to $50M
+payee_pattern,,reference,Regular expression matching payee names
+payment_name_pattern,,reference,Regular expression matching payment agency names
+payment_agency_name,,derived,Agency name as it appears in payments
+target,,reference,Agency code the rule maps to
+matched_by,,derived,Rule that mapped the payment agency name to a code
+in_budget,,derived,True when the agency code exists in the budget
+match,ref.map_mfr_agency,derived,How the plan file was matched to an agency
+file_pattern,,reference,Pattern matching a Managing for Results plan file name
+decision,ref.payment_agency_decisions,reference,"Mapping decision (pending, mapped, excluded)"
+decided_by,,reference,Who made the decision
+family,,reference,Company that several payee names belong to
+payee,ref.map_payee_vendor,derived,Payee name as published
+vendor_key,"ref.map_payee_vendor,ref.map_nonprofit",derived,Normalized payee name (suffixes and punctuation removed)
+vendor,,derived,Company name after grouping payee names
+is_government,,derived,True when the payee is a government body (excluded from vendor analysis)
+payee_area,ref.map_payee_vendor,derived,Focus area the payee is assigned to by reference/payee_focus_area.csv
+payee_name,"d_vendor_names,d_families,mart.d_families",derived,One payee name grouped into the vendor
+payee_names,vendor_families,derived,Payee names grouped into the company
+payment_names,agency_master,derived,Payment agency names mapped to the code
+how_matched,agency_master,derived,How the payment names were matched to the code
+payee_spend,f_area,derived,Payments to payees assigned to the focus area
+spend,,derived,Dollars spent (budget actuals or payments)
+operating_spending,"f_agency,agency_year",derived,Operating budget (all funds) for the agency and year
+payments,f_agency,derived,Payments made by the agency in the year
+paid,,derived,Payments in dollars
+total_payments,,derived,All payments in the fiscal year
+total_payments_prior,,derived,All payments in the previous fiscal year
+total_payments_yoy,,derived,Change in total payments from the previous fiscal year (share)
+payment_records,,derived,Payment rows in the fiscal year
+agencies,,derived,Agencies paying the vendor (or with payments in the year)
+vendors,,derived,Distinct payees in the year
+table,measures,derived,Dashboard table the measure belongs to
+grouped_by,measures,derived,Grain the measure is grouped by
+higher_is,measures,derived,"Whether a higher value is better, worse or neutral"
+fy2024,,derived,Payments in FY2024
+fy2025,,derived,Payments in FY2025
+fy2026,,derived,Payments in FY2026
+change,d_vendor_moves,derived,FY2026 minus FY2025 payments
+opp_id,d_opps,derived,Opportunity identifier
+detector,d_opps,derived,Screening rule that found the opportunity
+baseline,d_opps,derived,Spending the screening percentage is applied to
+low,,derived,Low end of the estimated saving; uses a screening assumption (see Assumptions register)
+high,,derived,High end of the estimated saving; uses a screening assumption (see Assumptions register)
+likely,d_opps,derived,Midpoint of low and high
+rank,d_bid_list,derived,Rank by FY2026 payments
+top_agencies,d_bid_list,derived,Three agencies paying the vendor most in FY2026
+check_id,,derived,Reported saving whose payments are checked
+check_note,,reference,How the payment check is defined
+payment_check,ref.gmi_reported_savings,reference,Payment check specification
+saving_id,,reference,Reported saving identifier (S01-S18)
+workstream,,reference,GMI workstream the saving belongs to
+item,,reference,Saving as GMI describes it
+reported_low,,source,Low end of the reported saving in dollars (GMI Final Report)
+reported_high,,source,High end of the reported saving in dollars (GMI Final Report)
+reported,d_savings_status,source,Reported saving midpoint in dollars
+source_url,,source,Link to the citation
+source_page,,source,Page of the citation
+source_quote,,source,Verbatim quote supporting the figure
+before,d_savings_status,derived,Matching payments in FY2025
+after,d_savings_status,derived,Matching payments in FY2026
+previous_status,d_savings_status,ops,Status in the previous run
+changed,d_savings_status,ops,True when the status changed since the previous run
+action,d_plan50,derived,Action in the path to $50M
+basis,d_plan50,derived,How the step's saving is calculated
+saving,d_plan50,derived,Annual saving of the step in dollars
+cumulative,d_plan50,derived,Running total of savings
+tab,,derived,Dashboard tab the row links to
+ok,d_master_quality,derived,True when the measure meets its target
+rec,d_rec_status,derived,Recommendation number (1-6)
+progress,d_rec_status,derived,Key number showing progress
+previous,d_rec_status,ops,Progress text in the previous run
+p10,f_forecast,derived,10th percentile of the bootstrap forecast
+p50,f_forecast,derived,Median of the bootstrap forecast
+p90,f_forecast,derived,90th percentile of the bootstrap forecast
+plan,f_forecast,derived,Spending after GMI's reported savings rate
+method,d_forecast_model,derived,Forecast model chosen by the backtest
+growth,d_forecast_model,derived,Annual growth rate of the chosen model
+backtest_mape,d_forecast_model,derived,Mean absolute percentage error of the chosen model (fit FY2017-2022; scored FY2023-2025)
+trend_mape,d_forecast_model,derived,Backtest error of the log-linear trend model
+naive_mape,d_forecast_model,derived,Backtest error of the naive (last actual) model
+drift_mape,d_forecast_model,derived,Backtest error of the drift model
+baseline_fy2025,d_forecast_model,derived,FY2025 actual spending in the area
+gmi_recurring,d_forecast_model,source,Recurring savings GMI reported for the area
+gmi_rate,d_forecast_model,derived,gmi_recurring divided by baseline_fy2025
+gmi_note,d_forecast_model,source,Which reported items make up gmi_recurring
+gf_share,d_forecast_model,derived,General Fund share of the area's FY2025 spending
+column,ref.column_dictionary,reference,Column name being defined
+applies_to,ref.column_dictionary,reference,"Tables the definition applies to (comma-separated, wildcards allowed); blank for all"
+origin,ref.column_dictionary,reference,"Where the column comes from: portal, source, reference, derived or ops"
+definition,ref.column_dictionary,reference,What the column means
+function_share,mart.agency_function,derived,Share of the agency's budget that year in its main function (1.0 for every agency today)
+payee_type,,derived,"Payee type from reference/payee_type_rules.csv: Government, Health care organization, Education institution, Financial institution, Utility, Non-profit (grants data) or Business or other"
+type_basis,,derived,"How the payee type was assigned: name rule, grants data nonprofit = Y, or default"
+payee_names,mart.vendor_*,derived,Distinct payee names grouped into the vendor
+payments,mart.vendor_agency_year,derived,"Payment rows in the vendor, agency and year"
+payments_all,mart.agency_rollup,derived,All payments made by the agency in the year
+payments_non_government,,derived,Payments by the agency to payees whose payee type is not Government
+focus_area_spend,mart.agency_rollup,derived,Budget spending in GMI's six focus areas (spending codes in ref.map_focus_area)
+agencies_all_years,mart.vendor_master,derived,Agencies that paid the vendor in any year
+agencies_last_full_year,mart.vendor_master,derived,Agencies that paid the vendor in the latest full payments year
+functions,mart.vendor_master,derived,Budget functions the vendor is paid from (via the paying agencies)
+main_function,mart.vendor_master,derived,"Function with the most payments to the vendor, all years"
+last_full_year,mart.vendor_master,derived,Latest fiscal year of payments that is complete
+paid_last_full_year,mart.vendor_master,derived,Payments to the vendor in last_full_year
+paid_prior_year,mart.vendor_master,derived,Payments to the vendor in the year before last_full_year
+paid_all_years,mart.vendor_master,derived,"Payments to the vendor, all years"
+grants,ref.map_nonprofit,derived,Grant and loan rows for the grantee
+flagged,ref.map_nonprofit,derived,Rows the grants dataset flags nonprofit = Y
+nonprofit_share,ref.map_nonprofit,derived,flagged divided by grants; 0.5 or more makes the payee a Non-profit
+granted,ref.map_nonprofit,derived,"Dollars granted or lent to the grantee, all years"
+priority,ref.payee_type_rule,reference,Order the payee type rules apply in; the lowest matching priority wins across a vendor's names
+operating_spending,agency_year,derived,"Operating budget, all funds, for the agency and year"
+payments,agency_year,derived,Payments made by the agency in the year (all payees)
+controllable_per_fte,agency_year,derived,Controllable purchases divided by budgeted positions
+code,area_code_year,derived,Comptroller sub-object code
+codes,area_year,derived,Spending codes with spending in the area
+payee_spend,area_year,derived,Payments to payees assigned to the focus area by payee name (pass-through payments excluded)
+vendor_name,"mart.payment_area,mart.v_purchase",portal,Payee name as published
+passthrough,mart.payment_area,derived,"True when the payment matches reference/payee_area_exclusions.csv (nursing facilities, bill assistance, outsourced benefits processing); its focus area is removed"
+agency_name_pattern,ref.payee_area_exclusions,reference,Regular expression on the paying agency name; blank for any agency
+main_function,d_vendors,derived,"Budget function with the most payments to the vendor, all years"
+payee_names,"d_vendors,d_multi,mart.d_multi",derived,Payee names grouped into the vendor
+fy2022,,derived,Payments in FY2022
+fy2023,,derived,Payments in FY2023
+agencies_fy2025,d_vendors,derived,Agencies that paid the vendor in FY2025
+agencies_fy2026,d_vendors,derived,Agencies that paid the vendor in FY2026
+paid_non_government,f_vendor_year,derived,Payments to non-government payees in the year
+top10_share,f_vendor_year,derived,Share of non-government payments held by the 10 largest vendors that year
+top100_share,f_vendor_year,derived,Share of non-government payments held by the 100 largest vendors that year
+vendors_1m,f_vendor_year,derived,Non-government vendors paid $1M or more that year
+agency_codes,d_multi,derived,Budget agency codes that paid the vendor that year (comma-separated)
+agencies_prior,d_multi,derived,Agencies that paid the vendor the year before
+spend_prior,d_multi,derived,Spend with the vendor the year before
+top5_share,f_concentration,derived,Share of the area's private-vendor spend held by its five largest vendors
+hhi,f_concentration,derived,"Herfindahl-Hirschman Index: sum of squared percentage shares of spend (0-10,000; above 1,800 is highly concentrated under the 2023 DOJ/FTC Merger Guidelines)"
+basis,d_multi_basis,derived,Counting basis: company and budget agency (this dashboard) or payee name and payment account (Maryland Spend Lens)
+area,"mart.v_purchase,d_multi",derived,"Payee-name focus area, or 'Other goods & services'"
+rank,d_area_top,derived,Rank of the vendor within its area and year by spend
+evidence,ref.payment_agency_decisions,reference,Source or reasoning behind the mapping decision
+in_payments,"mart.f_grants,f_grants",derived,"True when the grantee is also a payee in the payments data that fiscal year (names compared without case, spaces or punctuation)"
+paid_same_fy,"mart.f_grants,f_grants",derived,Payments to the grantee that fiscal year (all agencies) when in_payments is true
+general_funds,,derived,Operating budget paid from the General Fund
+special_funds,,derived,Operating budget paid from special funds (dedicated State revenue)
+federal_funds,,derived,"Operating budget paid from federal funds, including the ARRA and COVID federal fund types"
+paid_to_government,,derived,"Payments to government payees (counties, cities, school systems, State and federal bodies) per reference/payee_type_rules.csv"
+paid_to_others,,derived,"Payments to all other payees: businesses, non-profits, health care, education and financial institutions, utilities and individuals"
+loans,,derived,Grants dataset rows with category Loan
+grants_and_loans,,derived,All grants dataset rows (grants and loans)
+grants_in_payments,,derived,Grant and loan dollars whose grantee is also a payee in the payments data that year
+grants_in_payments_share,,derived,Share of grant and loan dollars whose grantee is also a payee that year (name match; a lower bound on overlap)
+grant_rows,,derived,Rows in the grants dataset that year
+grant_rows_in_payments,,derived,Grant rows whose grantee is also a payee that year
+payments_to_budget_share,,derived,Payments divided by the operating budget at its latest stage (a cross-check; the two measure different things)
+description,"core.fact_grant,mart.f_grants,f_grants",portal,"Grant or loan program description as the grantor published it (free text, as listed)"
+zipcode,"core.fact_grant,mart.f_grants,f_grants",portal,Grantee ZIP code as published
+category,"mart.f_grants,f_grants",derived,"Grant or Loan, from the dataset's category code (G/L)"
+payments,"mart.f_budget_vs_pay,mart.f_overlap,f_budget_vs_pay,f_overlap",derived,"Payments to all payees in the year (vendor payments dataset, 7syw-q4cy)"
+partial_year,"mart.f_budget_vs_pay,mart.f_overlap,f_budget_vs_pay,f_overlap",derived,True for the latest payments year while it is still being updated monthly
+grants,"mart.f_overlap,f_overlap",derived,Grants dataset rows with category Grant
+method,mart.d_forecast_backtest,derived,"Forecast model scored: log-linear trend, naive (last actual), drift (average yearly growth) or the equal-weight combination of those three (scored only, never kept)"
+origin_fy,mart.d_forecast_backtest,derived,Last fiscal year of actual spending the model was allowed to see (the forecast origin)
+horizon,mart.d_forecast_backtest,derived,Years ahead of the origin that the forecast looks (1 to 3)
+forecast_fy,mart.d_forecast_backtest,derived,"Fiscal year being forecast: origin plus horizon, up to FY2027 (years after the last actual are scored against the State's plan)"
+target,mart.d_forecast_backtest,derived,"What the forecast is scored against: actual (spending up to the last actual year) or plan (the State's own budget figure for FY2026 and FY2027, which is not an outcome)"
+outcome,mart.d_forecast_backtest,derived,"Dollars the forecast is scored against: actual spending, or the State's plan when target is plan"
+forecast,mart.d_forecast_backtest,derived,"The model's forecast for that year, in dollars, using only actual years up to the origin (never the plan)"
+abs_error,mart.d_forecast_backtest,derived,Absolute forecast error in dollars
+ape,mart.d_forecast_backtest,derived,Absolute percentage error: absolute error divided by the outcome
+mase,mart.d_forecast_backtest,derived,Mean absolute scaled error: absolute error divided by the mean one-step naive error inside the origin's own training years; above 1 is worse than the naive baseline's in-sample error
+p10,mart.d_forecast_backtest,derived,"10th percentile of the bootstrap range simulated at that origin, in dollars"
+p50,mart.d_forecast_backtest,derived,"Median of the bootstrap range simulated at that origin, in dollars"
+p90,mart.d_forecast_backtest,derived,"90th percentile of the bootstrap range simulated at that origin, in dollars"
+covered,mart.d_forecast_backtest,derived,True when the outcome fell inside the p10 to p90 range (a range meant to cover 80%)
+interval_score,mart.d_forecast_backtest,derived,Interval score of the p10 to p90 range in dollars (Gneiting and Raftery 2007): its width plus 10 times how far the outcome fell outside it; lower is better
+method,mart.d_forecast_calibration,derived,The area's chosen forecast model (the kept model of each area for the All areas row)
+scored,mart.d_forecast_calibration,derived,Rolling-backtest forecasts of actual spending scored for the area's chosen model
+covered_share,mart.d_forecast_calibration,derived,Share of those forecasts whose actual spending fell inside the published p10 to p90 range
+nominal,mart.d_forecast_calibration,derived,The share the range is meant to cover (0.8 for p10 to p90)
+widen_by,mart.d_forecast_calibration,derived,"Pooled factor by which the ranges would have needed to be wider (around the median, on the log scale) to cover the nominal share in the backtest; 1 is calibrated; measured in-sample on few points, so a size of the problem, not a validated correction"
+status,review_queue,derived,"Review state of the flag (Under review, Approved variance, Refer to OLA)"
+source,review_queue,derived,Which model grain raised the flag (Vendor-agency payments or Agency spending code)
+flag_id,,derived,"Review-queue flag identifier (A001, A002, ...), largest anomaly score first"
+score,,derived,Isolation-forest anomaly score (higher = more unusual)
+why,,derived,Plain-language reasons the row was flagged (its two most extreme features)
+rule_detector_overlap,,derived,"Rule detector that already covers the row (Opportunity detector, Bid list), or none"
+model,,derived,Forecasting model that produced the row
+adopted,,derived,Whether the challenger beat the naive baseline for this series in rolling validation
+naive_mase,,derived,Mean absolute scaled error of the naive forecast over the rolling origins
+challenger_mase,,derived,Mean absolute scaled error of the challenger over the rolling origins
+origin_fy,,derived,"Rolling-validation origin: models trained through this fiscal year predicted the next"
+series_scored,,derived,Agency x spending-code series scored at that origin
+mean_mase,,derived,Mean absolute scaled error over every series scored at that origin
+coverage_80,,derived,Share of outcomes inside the model's p10-p90 band (nominal 80%)
+mean_width_log,,derived,Mean width of the p10-p90 band in log points (narrower is better at equal coverage)
+p10,d_challenger_total,derived,"10th percentile of the simulated statewide total (path-by-path sums; per-series quantiles are not additive)"
+p50,d_challenger_total,derived,Median of the simulated statewide total
+p90,d_challenger_total,derived,90th percentile of the simulated statewide total
+n_series,d_challenger_total,derived,Agency x spending-code series in the statewide simulation
+n_adopted,d_challenger_total,derived,Series using the challenger (the rest use the naive last-actual forecast)
+bootstrap_paths,,derived,Simulated paths behind an uncertainty band
+scored,,derived,Rows the isolation forest scored in that grain
+kind,f_revenue,derived,"Actual (sourced closeout/BRE history) or Forecast (modelled)"
+value,f_revenue,derived,"General Fund revenue in dollars (actual years; budgetary basis, one-time items included)"
+method,d_revenue_model,derived,"The revenue model kept after the rolling-origin backtest (lowest mean MASE, ties to the simpler model)"
+growth,d_revenue_model,derived,"Average yearly log growth of the revenue history (exp(b) - 1 of the log-linear fit)"
+n_actual,d_revenue_model,derived,"Number of sourced actual years in the history"
+horizon_fy,d_revenue_model,derived,"Last fiscal year the revenue forecast reaches"
+cpi_extension_rate,d_revenue_model,derived,"Trailing average CPI growth used to extend CPI beyond its last complete fiscal year"
+trend_cpi_mase,d_revenue_model,derived,"Mean absolute scaled error of the trend + CPI candidate over the rolling origins"
+chosen_mase,d_revenue_model,derived,"Mean absolute scaled error of the kept revenue model over the rolling origins"
+coverage_80,d_revenue_model,derived,"Share of rolling backtest outcomes inside the kept model's p10-p90 band (nominal 80%)"
+forecast_fy,d_revenue_backtest,derived,"Fiscal year the backtest forecast was for (origin + 1)"
+origin_fy,d_revenue_backtest,derived,"Last training year of a rolling-origin backtest run"
+covered,d_revenue_backtest,derived,"Whether the outcome fell inside the p10-p90 band simulated at that origin"
+years_actual,results_trend,derived,"Actual years with a numeric value inside the measure's window"
+first_fy,results_trend,derived,"First actual fiscal year in the measure's window"
+last_fy,results_trend,derived,"Last actual fiscal year in the measure's window (never later than the last confirmed actual budget year)"
+first_value,results_trend,derived,"The measure's actual value in first_fy"
+last_value,results_trend,derived,"The measure's actual value in last_fy"
+value_change,results_trend,derived,"Change in the outcome over the window as a share of the first year"
+first_budget_real,results_trend,derived,"Agency budget in first_fy, adjusted to the latest complete year's dollars"
+last_budget_real,results_trend,derived,"Agency budget in last_fy, adjusted to the latest complete year's dollars"
+budget_change_real,results_trend,derived,"Change in the agency's real (CPI-adjusted) budget over the same window as a share of the first year"
+outcome_minus_spend,results_trend,derived,"value_change minus budget_change_real; positive means outcomes grew faster than real spending (side by side, not cause and effect)"
+cluster,agency_clusters,derived,"K-Means cluster of the agency's latest-actual-year controllable spending mix (z-scored area shares; k chosen by silhouette)"
+cluster_name,agency_clusters,derived,"The cluster's two dominant areas by mean share"
+top_area,agency_clusters,derived,"The area with the largest share of the agency's controllable spending"
+k_chosen,agency_clusters,derived,"The number of clusters chosen by silhouette score inside the configured range"
+silhouette,agency_clusters,derived,"Silhouette score of the chosen clustering (higher = better separated)"
+method,d_revenue_backtest,derived,Candidate model scored at that origin (naive last value; log-linear trend; drift; trend with CPI)
+outcome,d_revenue_backtest,derived,The actual General Fund revenue later observed for the forecast year
+forecast,d_revenue_backtest,derived,The candidate's point forecast made at that origin
+abs_error,d_revenue_backtest,derived,Absolute gap between the point forecast and the outcome
+mase,d_revenue_backtest,derived,Absolute error scaled by the naive in-sample step (mean absolute scaled error)
+p10,d_revenue_backtest,derived,10th percentile of the candidate's simulated band at that origin
+p50,d_revenue_backtest,derived,Median of the candidate's simulated band at that origin
+p90,d_revenue_backtest,derived,90th percentile of the candidate's simulated band at that origin
+last_actual_fy,d_revenue_model,derived,Last fiscal year with a sourced actual in the revenue history
+trend_mase,d_revenue_model,derived,Mean absolute scaled error of the log-linear trend candidate over the rolling origins
+drift_mase,d_revenue_model,derived,Mean absolute scaled error of the drift candidate over the rolling origins
+payments,f_budget_vs_pay,derived,Payments to all payees that fiscal year (actual payments only)
+partial_year,f_budget_vs_pay,derived,1 when the payments year is still in progress (FY2026 payments are part-year)
+code,f_challenger,derived,Comptroller sub-object number for the spending code
+p10,f_challenger,derived,10th percentile of the one-year-ahead band from the series' kept model
+p50,f_challenger,derived,Median of the one-year-ahead band from the series' kept model
+p90,f_challenger,derived,90th percentile of the one-year-ahead band from the series' kept model
+description,f_grants,derived,Grant description as published
+category,f_grants,derived,Grant category as published
+zipcode,f_grants,derived,Recipient ZIP code as published
+in_payments,f_grants,derived,Whether the recipient name also appears in the payments data
+paid_same_fy,f_grants,derived,Whether the recipient was also paid through the payments data in the same fiscal year
+payments,f_overlap,derived,Payments to all payees that fiscal year (actual payments only)
+partial_year,f_overlap,derived,1 when the payments year is still in progress
+grants,f_overlap,derived,Grant awards that fiscal year
+p10,f_revenue,derived,10th percentile of the FY2027 revenue band (bootstrap over backtest residuals)
+p50,f_revenue,derived,Median of the FY2027 revenue band
+p90,f_revenue,derived,90th percentile of the FY2027 revenue band
+goal,results_trend,derived,Managing for Results goal the measure sits under
+objective,results_trend,derived,Managing for Results objective the measure sits under
+measure,results_trend,derived,Performance measure text from the agency's Managing for Results submission
+code,review_queue,derived,Comptroller sub-object number for a flagged spending code
+source,mart.review_queue_scored,derived,Which model grain was scored (Vendor-agency payments or Agency spending code)
+gf_revenue_millions,ref.gf_revenue_history,reference,"Total General Fund revenue, budgetary basis, in millions of dollars"
+basis,ref.gf_revenue_history,reference,"How the figure was obtained (closeout letter, BRE board report, or derived from a cited growth rate)"
+source,ref.gf_revenue_history,reference,Document the figure was taken from
+payee_name,ops.payee_name_seen,ops,"Payee name exactly as paid (ref.map_payee_vendor.payee), one row per name ever seen by a passing build"
+first_seen_run_id,ops.payee_name_seen,ops,Extract run of the first build that passed its stop checks and saw this payee name
+first_seen_date,ops.payee_name_seen,ops,UTC date of that extract run (YYYY-MM-DD)
+last_seen_run_id,ops.payee_name_seen,ops,Extract run of the latest passing build that saw this payee name
+last_seen_date,ops.payee_name_seen,ops,UTC date of that extract run (YYYY-MM-DD)
+source_dataset,"core.fact_budget_highered,core.fact_budget_all_funds",derived,"Portal dataset the row comes from: yu65-jmmv (operating budget) or 4mca-332u (public higher education, CUR and CR funds)"
+operating_budget,"mart.d_all_funds,d_all_funds",derived,"Operating budget, all funds, from the operating budget dataset (yu65-jmmv) only: the figure every other budget view uses; nominal dollars"
+public_higher_education,"mart.d_all_funds,d_all_funds",derived,"Operating budget of R13 Morgan State, R14 St. Mary's College, R30 University System of Maryland and R95 Baltimore City Community College (4mca-332u, CUR and CR funds), which yu65-jmmv leaves out; nominal dollars"
+all_funds_including_higher_education,"mart.d_all_funds,d_all_funds",derived,"Operating budget plus public higher education: the all-funds total including public higher education, a separate labeled figure that no GMI savings baseline uses"
+label,"mart.d_all_funds,d_all_funds",derived,How the all-funds figure must be labeled wherever it is shown
+source_datasets,"mart.d_all_funds,d_all_funds",derived,Portal datasets summed in the row
+detector,mart.d_detector_backtest,derived,"Opportunity detector rerun as of an earlier year (Peer gap, Growth above trend, Tail spend, Leverage)"
+as_of_fy,mart.d_detector_backtest,derived,"Fiscal year the detector was rerun as of, using only data up to that year"
+next_fy,mart.d_detector_backtest,derived,"The following fiscal year, in which the as-of year's units are followed"
+cohort,mart.d_detector_backtest,derived,Flagged = the detector's own flags in the as-of year; Not flagged = units that passed its size and comparability filters but were not flagged
+units,mart.d_detector_backtest,derived,"Units in the cohort: agency and spending code (Peer gap, Growth), focus area (Tail spend) or private vendor (Leverage)"
+flagged_next,mart.d_detector_backtest,derived,Units of the cohort flagged again by the same detector rerun as of the next year
+flagged_next_share,mart.d_detector_backtest,derived,"flagged_next / units: the persistence rate for the Flagged cohort, the rate of new flags for Not flagged"
+spend_as_of,mart.d_detector_backtest,derived,Cohort spending in the as-of year: controllable actual budget (budget detectors) or private payments (payment detectors; for Tail spend the vendors outside the ten largest); nominal dollars
+spend_next,mart.d_detector_backtest,derived,"The same units' spending in the next year, measured the same way; nominal dollars"
+pooled_change,mart.d_detector_backtest,derived,"spend_next / spend_as_of - 1 over the cohort (blank when spend_as_of is zero); descriptive, not a saving"
+median_change,mart.d_detector_backtest,derived,"Median of the per-unit change from the as-of year to the next, over units with spending in the as-of year"
+units_zero_next,mart.d_detector_backtest,derived,Units with no spending in the next year (dropped or re-coded lines)
+cpi_index,"mart.d_deflator,d_deflator",source,"Average of the monthly CPI-U (U.S. city average, all items, not seasonally adjusted, BLS CUUR0000SA0) over the Maryland fiscal year (July-June)"
+cpi_months,"mart.d_deflator,d_deflator",source,Months of CPI in the fiscal-year average (12 = complete; fewer = partial year)
+factor,"mart.d_deflator,d_deflator",derived,Multiplier from nominal dollars of the fiscal year to FY2026 dollars: FY2026 CPI average / that year's CPI average (six-decimal text so the export keeps the precision); real dollars = nominal x factor
+population,"mart.d_deflator,d_deflator",source,Maryland resident population on July 1 at the start of the fiscal year (Census Population Estimates); per-resident dollars = dollars / population
+source,"mart.d_deflator,d_deflator",source,"Where cpi_index and population come from, with the CPI months averaged and the population vintage"
+employment_thousands,"raw.bls_employment",source,"Maryland total nonfarm employment in thousands, not seasonally adjusted (BLS series SMU24000000000000001), monthly"
+employment_thousands,"core.fact_md_employment",source,"Calendar-year average of the monthly BLS Maryland total nonfarm employment series (thousands, NSA)"
+real_gdp_millions,"raw.bea_md_gdp,core.fact_md_gdp",source,"Maryland real gross domestic product, all industries, millions of chained 2017 dollars (BEA SAGDP9 GDP-by-state bulk file, GeoFIPS 24000 LineCode 1)"
+priority_number,"ref.state_plan_map,mart.d_state_plan,d_state_plan",reference,"Moore-Miller State Plan priority (1-10 from the 2024 State Plan; 11 = government modernization and cost savings, Executive Order 01.01.2025.08)"
+priority_area,"ref.state_plan_map,mart.d_state_plan,d_state_plan",reference,"State Plan priority area name"
+citation_url,"ref.state_plan_map,mart.d_state_plan,d_state_plan",reference,"Link to the source for the priority mapping"
+audit_unit,"ref.ola_findings,mart.ola_findings,ola_findings",reference,"The audited unit when the OLA report covers part of the department"
+report_date,"ref.ola_findings,mart.ola_findings,ola_findings",reference,"Publication date of the OLA fiscal compliance audit report"
+findings,"ref.ola_findings,mart.ola_findings,ola_findings",reference,"Findings disclosed in the published report, including redacted cybersecurity findings"
+repeat_findings,"ref.ola_findings,mart.ola_findings,ola_findings",reference,"Findings repeated in full or part from the preceding audit report, per the report's own status review"
+redacted_findings,"ref.ola_findings,mart.ola_findings,ola_findings",reference,"Findings redacted from the public report under State Government Article 2-1224(i) (cybersecurity)"
+report_url,"ref.ola_findings,mart.ola_findings,ola_findings",reference,"Link to the audit report PDF on ola.maryland.gov"
+grant_id,"mart.grant_clusters,grant_clusters",derived,"Stable identifier of a grants row: hash of fiscal year, grantor, grantee, description, amount and ZIP as published"
+family,"mart.grant_clusters,mart.grant_families,grant_clusters,grant_families",derived,"Grant program family: the K-Means cluster of the description's TF-IDF vector, named by its two highest-weight centroid terms"
+top_terms,"mart.grant_clusters,mart.grant_families,grant_clusters,grant_families",derived,"The family's five highest-weight terms by cluster centroid (the auditable label)"
+grants,"mart.grant_families,grant_families",derived,"Described grants assigned to the family"
+grantees,"mart.grant_families,grant_families",derived,"Distinct grantees in the family"
+total_amount,"mart.grant_families,grant_families",derived,"Grant dollars in the family, all years, nominal"
+k_chosen,"mart.grant_clusters,grant_clusters",derived,"The number of families chosen by the documented heuristic (sqrt of half the corpus, clamped to 5-40)"
+year,raw.bls_employment,source,Calendar year of the BLS employment observation
+month,raw.bls_employment,source,Calendar month of the BLS employment observation
+months,core.fact_md_employment,derived,Months of the BLS employment series averaged into the calendar year
+description,"mart.grant_clusters,grant_clusters",portal,"Grant or loan program description as the grantor published it (free text, as listed)"
+category,"mart.grant_clusters,grant_clusters",portal,Grant or Loan
+zipcode,"mart.grant_clusters,grant_clusters",portal,Grantee ZIP code as published
+cluster,"mart.grant_clusters,mart.grant_families,grant_clusters,grant_families",derived,"K-Means cluster of the grant description's TF-IDF vector (k by the documented sqrt heuristic, fixed seed)"
+employment_thousands,"mart.d_econ,d_econ",source,"Calendar-year average Maryland total nonfarm employment, thousands (BLS SMU24000000000000001), on the fiscal year the calendar year mostly overlaps"
+real_gdp_millions,"mart.d_econ,d_econ",source,"Maryland real GDP, all industries, millions of chained 2017 dollars (BEA SAGDP9), on the fiscal year the calendar year mostly overlaps"

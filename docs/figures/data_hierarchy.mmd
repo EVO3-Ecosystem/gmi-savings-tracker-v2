@@ -1,0 +1,51 @@
+flowchart TB
+  classDef have fill:#e8f1fc,stroke:#2a78d6,color:#0b0b0b
+  classDef gap fill:#fdeee8,stroke:#eb6834,color:#0b0b0b,stroke-dasharray:5 3
+  classDef join fill:#e7f7f0,stroke:#1baf7a,color:#0b0b0b,stroke-width:2px
+
+  subgraph BUD[Budget: what is bought]
+    direction TB
+    B1["Budget line<br/>FY × agency × unit × program × subprogram<br/>× sub-object × fund type<br/>741,957 lines · core.fact_budget_scope"]:::have
+    B2["Sub-object (spending code, 377)<br/>→ focus area · scope · controllable"]:::have
+    B3["Program → Unit"]:::have
+    B1 --> B2
+    B1 --> B3
+  end
+
+  subgraph PAY[Payments: who is paid]
+    direction TB
+    P1["Payment line<br/>FY × agency name × payee × ZIP<br/>a yearly total, not a transaction<br/>411,231 lines · mart.payment_area"]:::have
+    P2["Vendor (company), 56,590<br/>ref.map_payee_vendor · payee type"]:::have
+    P3["Vendor × agency × year<br/>mart.vendor_agency_year"]:::have
+    P4["Vendor master<br/>mart.vendor_master"]:::have
+    P1 --> P2 --> P3 --> P4
+  end
+
+  subgraph OTH[Other datasets]
+    direction TB
+    FS["Funding source<br/>core.fact_fund"]:::have
+    FT["Positions<br/>agency × unit × program"]:::have
+    GR["Grants and loans<br/>core.fact_grant"]:::have
+  end
+
+  MAP["Payment agency mapping<br/>ref.map_payment_agency<br/>rules + reviewed agency decisions"]:::have
+  A["Agency × fiscal year<br/>the only key budget and payments share<br/>mart.agency_rollup"]:::join
+  F["Function (12)<br/>each agency sits in exactly one"]:::join
+  R["Results<br/>Managing for Results measures<br/>mart.agency_results"]:::have
+
+  B3 --> A
+  P1 --> MAP --> A
+  FS --> A
+  FT --> A
+  A --> F
+  A --> R
+  B2 -.->|"focus-area bridge<br/>(payee-name rules)"| P2
+
+  subgraph LIM[Known limits and decisions]
+    direction LR
+    G1["Payments · no program or spending code<br/>A budget line cannot be tied to a vendor<br/>(State data limit)"]:::gap
+    G2["Resolved · agency decisions, Nov 4<br/>MHIP → D78; Contract Appeals → D15;<br/>UMMS + security-filing fees excluded"]:::join
+    G3["Funding · core.fact_fund keeps only agency<br/>The raw file also has unit and program<br/>(fixable)"]:::gap
+    G4["Grants · program named in text<br/>128 of 1,106 match a budget program name"]:::gap
+  end
+

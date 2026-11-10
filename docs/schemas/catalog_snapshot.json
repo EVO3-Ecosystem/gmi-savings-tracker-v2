@@ -1,0 +1,1038 @@
+{
+ "read": "2026-11-09T21:49:09+00:00",
+ "results": [
+  {
+   "resource": {
+    "name": "State of Maryland Payments Data: FY2008 to FY2024",
+    "id": "7syw-q4cy",
+    "resource_name": null,
+    "parent_fxf": [],
+    "description": "This dataset shows all payments made by state agencies from Fiscal Years 2008 to present. All parties receiving funds are shown: private businesses, local governments, non-profit organizations, and individuals. If you have any questions please contact service.desk@maryland.gov.\nThis dataset combines multiple data sources from the Department of Budget and Management to show spending across multiple years. Source data can be found at spending.dbm.maryland.gov. This same data is mirrored in pre-existing datasets on internaldata.maryland.gov, one for each fiscal year.",
+    "attribution": "Department of Budget and Management (DBM)",
+    "attribution_link": "http://spending.dbm.maryland.gov",
+    "contact_email": null,
+    "type": "dataset",
+    "updatedAt": "2026-11-09T16:00:29.000Z",
+    "createdAt": "2020-10-19T17:18:57.000Z",
+    "metadata_updated_at": "2026-04-16T16:49:21.000Z",
+    "data_updated_at": "2026-11-09T16:00:29.000Z",
+    "page_views": {
+     "page_views_last_week": 82,
+     "page_views_last_month": 264,
+     "page_views_total": 5523,
+     "page_views_last_week_log": 6.375039431346925,
+     "page_views_last_month_log": 8.049848549450562,
+     "page_views_total_log": 12.431497604258052
+    },
+    "columns_name": [
+     "Fiscal Year",
+     "Amount",
+     "Date",
+     "Agency Name",
+     "Fiscal Period",
+     "Vendor Zip",
+     "Category",
+     "Vendor Name"
+    ],
+    "columns_field_name": [
+     "fiscal_year",
+     "amount",
+     "date",
+     "agency_name",
+     "fiscal_period",
+     "vendor_zip",
+     "category",
+     "vendor_name"
+    ],
+    "columns_datatype": [
+     "Number",
+     "Number",
+     "Calendar date",
+     "Text",
+     "Number",
+     "Text",
+     "Text",
+     "Text"
+    ],
+    "columns_description": [
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     ""
+    ],
+    "columns_format": [
+     {
+      "noCommas": "true"
+     },
+     {
+      "precisionStyle": "currency"
+     },
+     {},
+     {},
+     {},
+     {},
+     {},
+     {}
+    ],
+    "download_count": 12207,
+    "provenance": "official",
+    "lens_view_type": "tabular",
+    "lens_display_type": "table",
+    "locked": false,
+    "backend": "nbe",
+    "blob_mime_type": null,
+    "hide_from_data_json": false,
+    "publication_date": "2020-10-19T17:30:01.000Z"
+   },
+   "classification": {
+    "categories": [],
+    "tags": [],
+    "domain_category": "Budget",
+    "domain_tags": [
+     "fiscal",
+     "vendors",
+     "budget",
+     "dbm",
+     "department of budget and management",
+     "tax",
+     "spending",
+     "payments"
+    ],
+    "domain_metadata": [
+     {
+      "key": "Agency_State-Agency-Performing-Data-Updates",
+      "value": "Maryland Department of Information Technology"
+     },
+     {
+      "key": "GIS-Download_Place-Keywords",
+      "value": "Maryland"
+     },
+     {
+      "key": "Time-Period_Update-Frequency",
+      "value": "Monthly"
+     },
+     {
+      "key": "Time-Period_Date-Metadata-Written",
+      "value": "October 19, 2020"
+     },
+     {
+      "key": "Time-Period_Time-Period-of-Content",
+      "value": "July 1, 2007 - present"
+     },
+     {
+      "key": "Jurisdiction_Jurisdiction",
+      "value": "State of Maryland"
+     }
+    ]
+   },
+   "metadata": {
+    "domain": "opendata.maryland.gov",
+    "license": "Public Domain"
+   },
+   "permalink": "https://opendata.maryland.gov/d/7syw-q4cy",
+   "link": "https://opendata.maryland.gov/Budget/State-of-Maryland-Payments-Data-FY2008-to-FY2024/7syw-q4cy",
+   "owner": {
+    "id": "qyns-3jhx",
+    "user_type": "interactive",
+    "display_name": "Open Data Administrator"
+   },
+   "creator": {
+    "id": "qyns-3jhx",
+    "user_type": "interactive",
+    "display_name": "Open Data Administrator"
+   }
+  },
+  {
+   "resource": {
+    "name": "State of Maryland Grant and Loan Data: FY2009 to FY2025",
+    "id": "absk-avps",
+    "resource_name": null,
+    "parent_fxf": [],
+    "description": "Grant and Loan information on State Aid payments of $50,000 or more to profit or non-profit entities in a fiscal year in a fiscal year. Grants data is available beginning Fiscal Year 2009. Loans data is available beginning Fiscal Year 2010.",
+    "attribution": "Maryland Department of Budget and Management",
+    "attribution_link": "https://dbm.maryland.gov/budget/Pages/operbudget/GrantsPayments.aspx",
+    "contact_email": null,
+    "type": "dataset",
+    "updatedAt": "2026-10-09T19:32:43.000Z",
+    "createdAt": "2019-03-25T14:20:27.000Z",
+    "metadata_updated_at": "2026-10-09T19:32:41.000Z",
+    "data_updated_at": "2026-10-09T19:32:43.000Z",
+    "page_views": {
+     "page_views_last_week": 34,
+     "page_views_last_month": 191,
+     "page_views_total": 3890,
+     "page_views_last_week_log": 5.129283016944966,
+     "page_views_last_month_log": 7.584962500721156,
+     "page_views_total_log": 11.925925264972857
+    },
+    "columns_name": [
+     "Grantee",
+     "Nonprofit",
+     "Zip Code",
+     "Grantor",
+     "Fiscal Year",
+     "Amount",
+     "Fiscal Period",
+     "Date",
+     "Description",
+     "Category"
+    ],
+    "columns_field_name": [
+     "grantee",
+     "nonprofit",
+     "zipcode",
+     "grantor",
+     "fiscalyear",
+     "amount",
+     "fiscalperiod",
+     "date",
+     "description",
+     "category"
+    ],
+    "columns_datatype": [
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Number",
+     "Number",
+     "Number",
+     "Calendar date",
+     "Text",
+     "Text"
+    ],
+    "columns_description": [
+     "",
+     "Whether or not the grantee is a non-profit (503C) entity. ",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     ""
+    ],
+    "columns_format": [
+     {},
+     {},
+     {},
+     {},
+     {
+      "noCommas": "true"
+     },
+     {},
+     {},
+     {},
+     {},
+     {}
+    ],
+    "download_count": 8359,
+    "provenance": "official",
+    "lens_view_type": "tabular",
+    "lens_display_type": "table",
+    "locked": false,
+    "backend": "nbe",
+    "blob_mime_type": null,
+    "hide_from_data_json": false,
+    "publication_date": "2026-10-09T19:25:09.000Z"
+   },
+   "classification": {
+    "categories": [],
+    "tags": [],
+    "domain_category": "Budget",
+    "domain_tags": [
+     "loans",
+     "grants",
+     "dbm",
+     "budget"
+    ],
+    "domain_metadata": [
+     {
+      "key": "Agency_State-Agency-Performing-Data-Updates",
+      "value": "Maryland Department of Information Technology"
+     },
+     {
+      "key": "Time-Period_Update-Frequency",
+      "value": "Annually"
+     },
+     {
+      "key": "Time-Period_Date-Metadata-Written",
+      "value": "December 1, 2020"
+     },
+     {
+      "key": "Time-Period_Time-Period-of-Content",
+      "value": "July 1, 2009 - June 30, 2024"
+     },
+     {
+      "key": "GIS-Download_Place-Keywords",
+      "value": "Maryland"
+     },
+     {
+      "key": "Jurisdiction_Jurisdiction",
+      "value": "State of Maryland"
+     }
+    ]
+   },
+   "metadata": {
+    "domain": "opendata.maryland.gov",
+    "license": "Public Domain"
+   },
+   "permalink": "https://opendata.maryland.gov/d/absk-avps",
+   "link": "https://opendata.maryland.gov/Budget/State-of-Maryland-Grant-and-Loan-Data-FY2009-to-FY/absk-avps",
+   "owner": {
+    "id": "qyns-3jhx",
+    "user_type": "interactive",
+    "display_name": "Open Data Administrator"
+   },
+   "creator": {
+    "id": "qyns-3jhx",
+    "user_type": "interactive",
+    "display_name": "Open Data Administrator"
+   }
+  },
+  {
+   "resource": {
+    "name": "Maryland Operating Budget (current)",
+    "id": "yu65-jmmv",
+    "resource_name": null,
+    "parent_fxf": [],
+    "description": "PLEASE READ THIS DATASET DESCRIPTION IN FULL BEFORE EXPORTING ANY DATA. This dataset, shows operating budget in these categories by fiscal year.\n\nMaryland's operating budget. The data for each FY should be considered in the state listed Governor's Allowance, Legislative Appropriation, or Working Budget. This data is used as a part of the Maryland Transparency Portal at https://mtp.maryland.gov\n\n\nData are provided by DBM to the Department of Information Technology (DoIT), which uploads and maintains this dataset. Please note that this dataset is subject to change as new data become available from DBM. Therefore, DBM and DoIT can make no guarantee that the data in this dataset are fully accurate or complete. By accessing this dataset, or by accessing this dataset's metadata, you acknowledge that DBM and DoIT do not guarantee the accuracy nor the completeness of the dataset. \n\nAdditional documents on Maryland Operating Budgets are available at http://dbm.maryland.gov/budget/Pages/operbudhome.aspx",
+    "attribution": "Maryland Department of Budget Management",
+    "attribution_link": "http://dbm.maryland.gov/budget/Pages/operbudhome.aspx",
+    "contact_email": null,
+    "type": "dataset",
+    "updatedAt": "2026-08-10T18:07:57.000Z",
+    "createdAt": "2022-07-11T13:21:16.000Z",
+    "metadata_updated_at": "2026-08-10T18:05:56.000Z",
+    "data_updated_at": "2026-08-10T18:07:57.000Z",
+    "page_views": {
+     "page_views_last_week": 21,
+     "page_views_last_month": 139,
+     "page_views_total": 2888,
+     "page_views_last_week_log": 4.459431618637297,
+     "page_views_last_month_log": 7.129283016944966,
+     "page_views_total_log": 11.496354488564615
+    },
+    "columns_name": [
+     "Description",
+     "Comptroller Subobject Code",
+     "Comptroller Subobject Name",
+     "Agency Subobject Name",
+     "Program Code",
+     "Agency Code",
+     "Agency Name",
+     "Fund Type Name",
+     "Budget",
+     "Type",
+     "Organization Code",
+     "Organization Sub Code",
+     "Category",
+     "Unit Name",
+     "Program Name",
+     "Subprogram Code",
+     "Subprogram Name",
+     "Object Code",
+     "Object Name",
+     "Category Title",
+     "Fiscal Year",
+     "Unit Code",
+     "Agency Subobject Code"
+    ],
+    "columns_field_name": [
+     "description",
+     "comptroller_subobject_code",
+     "comptroller_subobject_name",
+     "agency_subobject_name",
+     "program_code",
+     "agency_code",
+     "agency_name",
+     "fund_type_name",
+     "budget",
+     "type",
+     "organization_code",
+     "organization_sub_code",
+     "category",
+     "unit_name",
+     "program_name",
+     "subprogram_code",
+     "subprogram_name",
+     "object_code",
+     "object_name",
+     "category_title",
+     "fiscal_year",
+     "unit_code",
+     "agency_subobject_code"
+    ],
+    "columns_datatype": [
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Number",
+     "Text",
+     "Text",
+     "Text",
+     "Number",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Number",
+     "Text",
+     "Text"
+    ],
+    "columns_description": [
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     ""
+    ],
+    "columns_format": [
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {
+      "noCommas": "true"
+     },
+     {},
+     {}
+    ],
+    "download_count": 6674,
+    "provenance": "official",
+    "lens_view_type": "tabular",
+    "lens_display_type": "table",
+    "locked": false,
+    "backend": "nbe",
+    "blob_mime_type": null,
+    "hide_from_data_json": false,
+    "publication_date": "2022-07-19T11:11:34.000Z"
+   },
+   "classification": {
+    "categories": [],
+    "tags": [],
+    "domain_category": "Budget",
+    "domain_tags": [
+     "funding",
+     "appropriations",
+     "operating budget",
+     "department of budget and management",
+     "dbm",
+     "budget"
+    ],
+    "domain_metadata": [
+     {
+      "key": "Agency_State-Agency-Performing-Data-Updates",
+      "value": "Maryland Department of Information Technology"
+     },
+     {
+      "key": "Time-Period_Update-Frequency",
+      "value": "Annually"
+     },
+     {
+      "key": "Time-Period_Date-Metadata-Written",
+      "value": "Updated Feb 11, 2026"
+     },
+     {
+      "key": "Time-Period_Time-Period-of-Content",
+      "value": "FY2017-FY2027"
+     },
+     {
+      "key": "GIS-Download_Place-Keywords",
+      "value": "Maryland"
+     },
+     {
+      "key": "Jurisdiction_Jurisdiction",
+      "value": "State of Maryland"
+     }
+    ]
+   },
+   "metadata": {
+    "domain": "opendata.maryland.gov",
+    "license": "Public Domain"
+   },
+   "permalink": "https://opendata.maryland.gov/d/yu65-jmmv",
+   "link": "https://opendata.maryland.gov/Budget/Maryland-Operating-Budget-current-/yu65-jmmv",
+   "owner": {
+    "id": "qyns-3jhx",
+    "user_type": "interactive",
+    "display_name": "Open Data Administrator"
+   },
+   "creator": {
+    "id": "qyns-3jhx",
+    "user_type": "interactive",
+    "display_name": "Open Data Administrator"
+   }
+  },
+  {
+   "resource": {
+    "name": "Maryland Operating Budget: CUR and CR",
+    "id": "4mca-332u",
+    "resource_name": null,
+    "parent_fxf": [],
+    "description": "PLEASE READ THIS DATASET DESCRIPTION IN FULL BEFORE EXPORTING ANY DATA.\nThis dataset, specific to funding for higher education institutions, shows\nMaryland's FY2017-FY2024 operating budget (actual expenditures), FY2025 operating budget (working), and FY2026 operating budget (Governor's Allowance). The data for each FY should be considered in the state listed\nabove. Data are provided by DBM to the Department of Information Technology\n(DoIT), which uploads and maintains this dataset. Please note that this\ndataset is subject to change as new data become available from DBM.\nTherefore, DBM and DoIT can make no guarantee that the data in this dataset\nare fully accurate or complete. By accessing this dataset, or by accessing\nthis dataset's metadata, you acknowledge that DBM and DoIT do not guarantee\nthe accuracy nor the completeness of the dataset. Additional documents on\nMaryland Operating Budgets are available at\nhttp://dbm.maryland.gov/budget/Pages/operbudhome.aspx",
+    "attribution": "Maryland Department of Budget Management",
+    "attribution_link": "http://dbm.maryland.gov/budget/Pages/operbudhome.aspx",
+    "contact_email": null,
+    "type": "dataset",
+    "updatedAt": "2026-08-10T14:47:54.000Z",
+    "createdAt": "2022-07-11T16:15:06.000Z",
+    "metadata_updated_at": "2026-08-10T14:47:17.000Z",
+    "data_updated_at": "2026-08-10T14:47:54.000Z",
+    "page_views": {
+     "page_views_last_week": 9,
+     "page_views_last_month": 41,
+     "page_views_total": 1488,
+     "page_views_last_week_log": 3.3219280948873626,
+     "page_views_last_month_log": 5.392317422778761,
+     "page_views_total_log": 10.5401280385821
+    },
+    "columns_name": [
+     "Comptroller Subobject Name",
+     "Comptroller Subobject Code",
+     "Object Name",
+     "Object Code",
+     "Subprogram Name",
+     "Subprogram Code",
+     "Program Name",
+     "Program Code",
+     "Unit Name",
+     "Agency Subobject Code",
+     "Agency Subobject Name",
+     "Fund Type Name",
+     "Budget",
+     "Organization Code",
+     "Unit Code",
+     "Agency Name",
+     "Agency Code",
+     "Fiscal Year",
+     "Category",
+     "Category Title"
+    ],
+    "columns_field_name": [
+     "comptroller_subobject_name",
+     "comptroller_subobject_code",
+     "object_name",
+     "object_code",
+     "subprogram_name",
+     "subprogram_code",
+     "program_name",
+     "program_code",
+     "unit_name",
+     "agency_subobject_code",
+     "agency_subobject_name",
+     "fund_type_name",
+     "budget",
+     "organization_code",
+     "unit_code",
+     "agency_name",
+     "agency_code",
+     "fiscal_year",
+     "category",
+     "category_title"
+    ],
+    "columns_datatype": [
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Number",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Number",
+     "Number",
+     "Text"
+    ],
+    "columns_description": [
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     ""
+    ],
+    "columns_format": [
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {
+      "noCommas": "true"
+     },
+     {},
+     {}
+    ],
+    "download_count": 1490,
+    "provenance": "official",
+    "lens_view_type": "tabular",
+    "lens_display_type": "table",
+    "locked": false,
+    "backend": "nbe",
+    "blob_mime_type": null,
+    "hide_from_data_json": false,
+    "publication_date": "2022-07-15T18:56:07.000Z"
+   },
+   "classification": {
+    "categories": [],
+    "tags": [],
+    "domain_category": "Budget",
+    "domain_tags": [
+     "appropriations",
+     "budget",
+     "dbm",
+     "department of budget and management",
+     "funding",
+     "operating budget"
+    ],
+    "domain_metadata": [
+     {
+      "key": "Agency_State-Agency-Performing-Data-Updates",
+      "value": "Maryland Department of Information Technology"
+     },
+     {
+      "key": "Time-Period_Update-Frequency",
+      "value": "Annually"
+     },
+     {
+      "key": "Time-Period_Date-Metadata-Written",
+      "value": "Updated Feb 13, 2025"
+     },
+     {
+      "key": "Time-Period_Time-Period-of-Content",
+      "value": "FY2017-FY2026"
+     },
+     {
+      "key": "GIS-Download_Place-Keywords",
+      "value": "Maryland"
+     },
+     {
+      "key": "Jurisdiction_Jurisdiction",
+      "value": "State of Maryland"
+     }
+    ]
+   },
+   "metadata": {
+    "domain": "opendata.maryland.gov",
+    "license": "Public Domain"
+   },
+   "permalink": "https://opendata.maryland.gov/d/4mca-332u",
+   "link": "https://opendata.maryland.gov/Budget/Maryland-Operating-Budget-CUR-and-CR/4mca-332u",
+   "owner": {
+    "id": "qyns-3jhx",
+    "user_type": "interactive",
+    "display_name": "Open Data Administrator"
+   },
+   "creator": {
+    "id": "qyns-3jhx",
+    "user_type": "interactive",
+    "display_name": "Open Data Administrator"
+   }
+  },
+  {
+   "resource": {
+    "name": "Maryland Operating Budget - Funding Source",
+    "id": "gy87-e27x",
+    "resource_name": null,
+    "parent_fxf": [],
+    "description": "PLEASE READ THIS DATASET DESCRIPTION IN FULL BEFORE EXPORTING ANY DATA.\nThis dataset, specific to funding by funding sources, shows operating budget in these categories by fiscal year.\n\nMaryland's FY2017-2024 operating budget (Actual Expenditures), FY2025 operating budget (Working), and FY2026 operating budget (Governor's Allowance). The data for each FY should be considered in the state listed above. \n\nData are provided by DBM to the Department of Information Technology (DoIT), which uploads and maintains this dataset. Please note that this dataset is subject to change as new data become available from DBM. Therefore, DBM and DoIT can make no guarantee that the data in this dataset are fully accurate or complete. By accessing this dataset, or by accessing this dataset's metadata, you acknowledge that DBM and DoIT do not guarantee the accuracy nor the completeness of the dataset. \n\nAdditional documents on Maryland Operating Budgets are available at http://dbm.maryland.gov/budget/Pages/operbudhome.aspx",
+    "attribution": "Maryland Department of Budget Management",
+    "attribution_link": "http://dbm.maryland.gov/budget/Pages/operbudhome.aspx",
+    "contact_email": null,
+    "type": "dataset",
+    "updatedAt": "2026-08-10T17:26:19.000Z",
+    "createdAt": "2022-07-11T16:33:26.000Z",
+    "metadata_updated_at": "2026-08-10T17:26:03.000Z",
+    "data_updated_at": "2026-08-10T17:26:19.000Z",
+    "page_views": {
+     "page_views_last_week": 17,
+     "page_views_last_month": 51,
+     "page_views_total": 1284,
+     "page_views_last_week_log": 4.169925001442312,
+     "page_views_last_month_log": 5.700439718141093,
+     "page_views_total_log": 10.32755264408124
+    },
+    "columns_name": [
+     "Organization Code",
+     "Category Title",
+     "Unit Code",
+     "Unit Name",
+     "Program Code",
+     "Program Name",
+     "Fund Type Name",
+     "Description",
+     "Fiscal Year",
+     "Category",
+     "Agency Code",
+     "Agency Name",
+     "Fund Source Code",
+     "Fund Source Name",
+     "Budget"
+    ],
+    "columns_field_name": [
+     "organization_code",
+     "category_title",
+     "unit_code",
+     "unit_name",
+     "program_code",
+     "program_name",
+     "fund_type_name",
+     "description",
+     "fiscal_year",
+     "category",
+     "agency_code",
+     "agency_name",
+     "fund_source_code",
+     "fund_source_name",
+     "budget"
+    ],
+    "columns_datatype": [
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Number",
+     "Number",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Number"
+    ],
+    "columns_description": [
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     ""
+    ],
+    "columns_format": [
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {
+      "noCommas": "true"
+     },
+     {},
+     {},
+     {},
+     {},
+     {},
+     {}
+    ],
+    "download_count": 21428,
+    "provenance": "official",
+    "lens_view_type": "tabular",
+    "lens_display_type": "table",
+    "locked": false,
+    "backend": "nbe",
+    "blob_mime_type": null,
+    "hide_from_data_json": false,
+    "publication_date": "2022-07-15T17:42:43.000Z"
+   },
+   "classification": {
+    "categories": [],
+    "tags": [],
+    "domain_category": "Budget",
+    "domain_tags": [
+     "appropriations",
+     "budget",
+     "dbm",
+     "operating budget",
+     "funding",
+     "department of budget and management"
+    ],
+    "domain_metadata": [
+     {
+      "key": "Agency_State-Agency-Performing-Data-Updates",
+      "value": "Maryland Department of Information Technology"
+     },
+     {
+      "key": "Time-Period_Update-Frequency",
+      "value": "Annually"
+     },
+     {
+      "key": "Time-Period_Date-Metadata-Written",
+      "value": "Updated Feb 13, 2025"
+     },
+     {
+      "key": "Time-Period_Time-Period-of-Content",
+      "value": "FY2017 - FY2026"
+     },
+     {
+      "key": "GIS-Download_Place-Keywords",
+      "value": "Maryland"
+     },
+     {
+      "key": "Jurisdiction_Jurisdiction",
+      "value": "State of Maryland"
+     }
+    ]
+   },
+   "metadata": {
+    "domain": "opendata.maryland.gov",
+    "license": "Public Domain"
+   },
+   "permalink": "https://opendata.maryland.gov/d/gy87-e27x",
+   "link": "https://opendata.maryland.gov/Budget/Maryland-Operating-Budget-Funding-Source/gy87-e27x",
+   "owner": {
+    "id": "qyns-3jhx",
+    "user_type": "interactive",
+    "display_name": "Open Data Administrator"
+   },
+   "creator": {
+    "id": "qyns-3jhx",
+    "user_type": "interactive",
+    "display_name": "Open Data Administrator"
+   }
+  },
+  {
+   "resource": {
+    "name": "State of Maryland Full Time Equivalents",
+    "id": "x8qy-486w",
+    "resource_name": null,
+    "parent_fxf": [],
+    "description": "PLEASE READ THIS DATASET DESCRIPTION IN FULL BEFORE EXPORTING ANY DATA.\nThis dataset, specific to funding for FTE salaries etc., shows operating budget in these categories by fiscal year\n\nMaryland's FY2017-FY2024 (Actual Expenditures), FY2025 (Working), and FY2026 (Governor's Allowance). The data for each FY should be considered in the state listed above. \n\nData are provided by DBM to the Department of Information Technology (DoIT), which uploads and maintains this dataset. Please note that this dataset is subject to change as new data become available from DBM. Therefore, DBM and DoIT can make no guarantee that the data in this dataset\nare fully accurate or complete. By accessing this dataset, or by accessing this dataset's metadata, you acknowledge that DBM and DoIT do not guarantee the accuracy nor the completeness of the dataset. \n\nAdditional documents on Maryland Operating Budgets are available at\nhttp://dbm.maryland.gov/budget/Pages/operbudhome.aspx",
+    "attribution": "Maryland Department of Budget Management",
+    "attribution_link": "https://dbm.maryland.gov/budget/Pages/operbudhome.aspx",
+    "contact_email": null,
+    "type": "dataset",
+    "updatedAt": "2026-08-10T17:51:15.000Z",
+    "createdAt": "2022-07-11T16:44:09.000Z",
+    "metadata_updated_at": "2026-08-10T17:51:10.000Z",
+    "data_updated_at": "2026-08-10T17:51:15.000Z",
+    "page_views": {
+     "page_views_last_week": 14,
+     "page_views_last_month": 52,
+     "page_views_total": 1232,
+     "page_views_last_week_log": 3.9068905956085187,
+     "page_views_last_month_log": 5.7279204545632,
+     "page_views_total_log": 10.26795708440284
+    },
+    "columns_name": [
+     "Unit Name",
+     "Agency Code",
+     "Unit Code",
+     "Program Code",
+     "Agency Name",
+     "Organization Code",
+     "Fiscal Year",
+     "Program Name",
+     "Count"
+    ],
+    "columns_field_name": [
+     "unit_name",
+     "agency_code",
+     "unit_code",
+     "program_code",
+     "agency_name",
+     "organization_code",
+     "fiscal_year",
+     "program_name",
+     "count"
+    ],
+    "columns_datatype": [
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Text",
+     "Number",
+     "Text",
+     "Number"
+    ],
+    "columns_description": [
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     ""
+    ],
+    "columns_format": [
+     {},
+     {},
+     {},
+     {},
+     {},
+     {},
+     {
+      "noCommas": "true"
+     },
+     {},
+     {}
+    ],
+    "download_count": 1978,
+    "provenance": "official",
+    "lens_view_type": "tabular",
+    "lens_display_type": "table",
+    "locked": false,
+    "backend": "nbe",
+    "blob_mime_type": null,
+    "hide_from_data_json": false,
+    "publication_date": "2022-07-19T11:15:55.000Z"
+   },
+   "classification": {
+    "categories": [],
+    "tags": [],
+    "domain_category": "Budget",
+    "domain_tags": [
+     "appropriations",
+     "operating budget",
+     "funding",
+     "department of budget and management",
+     "dbm",
+     "budget"
+    ],
+    "domain_metadata": [
+     {
+      "key": "Agency_State-Agency-Performing-Data-Updates",
+      "value": "Maryland Department of Information Technology"
+     },
+     {
+      "key": "Time-Period_Update-Frequency",
+      "value": "Annually"
+     },
+     {
+      "key": "Time-Period_Date-Metadata-Written",
+      "value": "Updated Feb 13, 2025"
+     },
+     {
+      "key": "Time-Period_Time-Period-of-Content",
+      "value": "FY2017 - FY2026"
+     },
+     {
+      "key": "GIS-Download_Place-Keywords",
+      "value": "Maryland"
+     },
+     {
+      "key": "Jurisdiction_Jurisdiction",
+      "value": "State of Maryland"
+     }
+    ]
+   },
+   "metadata": {
+    "domain": "opendata.maryland.gov",
+    "license": "Public Domain"
+   },
+   "permalink": "https://opendata.maryland.gov/d/x8qy-486w",
+   "link": "https://opendata.maryland.gov/Budget/State-of-Maryland-Full-Time-Equivalents/x8qy-486w",
+   "owner": {
+    "id": "qyns-3jhx",
+    "user_type": "interactive",
+    "display_name": "Open Data Administrator"
+   },
+   "creator": {
+    "id": "qyns-3jhx",
+    "user_type": "interactive",
+    "display_name": "Open Data Administrator"
+   }
+  }
+ ]
+}

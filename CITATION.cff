@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+title: "GMI Savings Tracker v2"
+message: "If you use this software or its published datasets in research or reporting, please cite it as below."
+type: software
+authors:
+  - family-names: Napier
+    given-names: Sierra
+    affiliation: EVO3 Ecosystem
+identifiers:
+  - type: url
+    value: https://github.com/EVO3-Ecosystem/gmi-savings-tracker-v2
+repository-code: https://github.com/EVO3-Ecosystem/gmi-savings-tracker-v2
+url: https://evo3-ecosystem.github.io/gmi-savings-tracker-v2/
+license: MIT
+version: 2.0.0
+date-released: 2026-11-10
+keywords:
+  - open data
+  - government transparency
+  - Maryland
+  - public finance
+  - procurement analytics
+  - DuckDB
+  - forecasting
+  - anomaly detection
+abstract: >-
+  An independent savings tracker for Maryland's Government Modernization
+  Initiative (GMI). A free, local pipeline (SODA API -> Parquet -> DuckDB ->
+  dashboard CSVs) checks reported savings against the state's own payments,
+  budgets, staffing and grants data, and quantifies the path to the state's
+  $50M annual savings target. Includes LightGBM quantile forecast corridors,
+  an isolation-forest anomaly review queue, spending-mix agency clustering,
+  and grant-text program families. Not an official State of Maryland product.

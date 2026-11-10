@@ -1,0 +1,2 @@
+run_id,started_utc,seconds,status,published,checks,passed,warnings,failed,repairs,payment_rows,budget_rows,mode
+20261109T153150Z,2026-11-09T15:31:50+00:00,531.6,passed,1,114,113,1,0,0,411231,741957,fresh download

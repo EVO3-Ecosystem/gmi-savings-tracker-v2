@@ -1,0 +1,26 @@
+PY ?= python3
+extract:  ; $(PY) -m src.pipeline.extract
+extract-full: ; $(PY) -m src.pipeline.extract --force
+gate1:    ; $(PY) -m src.pipeline.extract --gate
+build:    ; $(PY) -m src.pipeline.build
+gate3:    ; $(PY) -m pytest -q tests/test_reference.py
+all:      extract build
+test:     ; $(PY) -m pytest -q tests
+test-fault: ; $(PY) -m pytest -q tests/test_fault_injection.py
+reconcile: ; $(PY) -m src.pipeline.reconcile $(RECONCILE_FLAGS)
+parity:   ; $(PY) -m src.pipeline.parity --legacy $(or $(LEGACY),../gst/out) --strict
+export:   ; $(PY) -m src.pipeline.export $(EXPORT_FLAGS)
+snapshot: ; $(PY) -m src.pipeline.snapshot create
+restore:  ; $(PY) -m src.pipeline.snapshot restore $(SNAP) $(RESTORE_FLAGS)
+figures:  ; $(PY) -m src.pipeline.figures
+diagrams: ; mmdc -i docs/figures/pipeline.mmd -o docs/figures/pipeline.png -b white -s 2 && mmdc -i docs/figures/data_hierarchy.mmd -o docs/figures/data_hierarchy.png -b white -s 2
+docs:     ; $(PY) -m src.pipeline.governance $(if $(DASH),--dashboard $(DASH))
+site:     ; $(PY) -m src.pipeline.site $(SITE_FLAGS)
+site-snapshot: ; $(PY) -m src.pipeline.site --refresh-snapshot
+# Opt-in (decision #12): mirror the marts into a local Postgres. DuckDB stays the default.
+# Dry run without a database: make postgres DRY_RUN=1  (add SRC=--duckdb to read the marts instead of the CSV export)
+postgres:
+	$(if $(DRY_RUN),,$(if $(DATABASE_URL),,$(error DATABASE_URL is not set — point it at a local Postgres, e.g. export DATABASE_URL=postgresql://localhost:5432/md_marts (preview without connecting: make postgres DRY_RUN=1))))
+	$(PY) mcp_server/db/load_postgres.py $(if $(DRY_RUN),--dry-run) $(SRC)
+docs-strict: ; $(PY) -m src.pipeline.governance --strict $(if $(DASH),--dashboard $(DASH))
+.PHONY: extract extract-full gate1 build gate3 all test test-fault docs docs-strict reconcile figures diagrams parity export snapshot restore site site-snapshot postgres

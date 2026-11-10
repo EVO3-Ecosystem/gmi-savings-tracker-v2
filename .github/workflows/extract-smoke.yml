@@ -1,0 +1,28 @@
+# Manual check that the portal is reachable and the extract step still works end to end.
+# The pipeline runs locally by decision (no cloud); this workflow only runs when started by hand.
+name: Extract and build
+on: workflow_dispatch
+permissions:
+  contents: read
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with: {python-version: "3.12", cache: pip}
+      - run: pip install -e ".[dev]"
+      - run: python -m src.pipeline.extract
+        env: {MD_SODA_APP_TOKEN: "${{ secrets.MD_SODA_APP_TOKEN }}", BLS_API_KEY: "${{ secrets.BLS_API_KEY }}"}
+      - run: python -m src.pipeline.build
+      - run: pytest -q
+      - name: Reconcile with the Transparency Portal downloads
+        run: python -m src.pipeline.reconcile --strict
+      - run: python -m src.pipeline.figures
+      - name: Data governance (schemas, coverage, drift)
+        run: python -m src.pipeline.governance --strict
+        continue-on-error: true
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with: {name: run-evidence, path: "data/raw/*/manifest.json\ndata/check_history.csv\ndata/runs.csv\ndocs/data-governance.md\ndocs/schemas/*\ndocs/reconciliation/*\ndocs/figures/*"}

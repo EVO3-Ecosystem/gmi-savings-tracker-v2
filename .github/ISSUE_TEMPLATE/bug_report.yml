@@ -1,0 +1,23 @@
+name: Bug report
+description: Something broken — build, tests, dashboard, or docs
+labels: [bug]
+body:
+  - type: input
+    id: command
+    attributes: {label: Command or page, placeholder: "make build / python -m pytest / Agencies tab"}
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened vs what you expected
+      description: Paste the error text or describe the wrong behavior.
+    validations: {required: true}
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      placeholder: "macOS 15, Python 3.12 (.venv), commit bd66e34"
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant output
+      render: shell

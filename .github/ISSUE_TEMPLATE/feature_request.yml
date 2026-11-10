@@ -1,0 +1,21 @@
+name: Feature request
+description: An idea for a check, model, data source, or chart
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+      description: What should the tracker do that it doesn't today?
+    validations: {required: true}
+  - type: textarea
+    id: data
+    attributes:
+      label: Data source
+      description: Ideas need public data. Link the dataset or document that would feed this.
+      placeholder: "https://opendata.maryland.gov/... or 'needs research'"
+  - type: textarea
+    id: value
+    attributes:
+      label: Why it matters
+      description: What decision or finding would this improve?
