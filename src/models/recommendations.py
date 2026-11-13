@@ -52,7 +52,7 @@ def plan50(model, forecast, bids, cfg=None):
     pl, target = cfg["plan"], cfg["target_saving"]
     f27 = forecast[forecast.fiscal_year == pl["forecast_fy"]].set_index("area").p50
     pace = float((model.set_index("area").gmi_rate.fillna(0) * f27.reindex(model.area).values).sum())
-    rows = [{"step": 1, "action": "Keep GMI's current savings going", "basis": f"forecast FY{pl['forecast_fy']} spending × the rate GMI reported for each area",
+    rows = [{"step": 1, "action": "Apply GMI's reported savings rates", "basis": f"forecast FY{pl['forecast_fy']} spending × the rate GMI reported for each area",
              "saving": pace, "low": pace, "high": pace, "tab": "calc"}]
     for _, b in bids.iterrows():
         if sum(r["saving"] for r in rows) >= target:
@@ -85,6 +85,7 @@ def status(bids, chk, plan, matched, mfr=None, cfg=None):
     """One row per recommendation. matched: share of the matched year's payments with a budget agency."""
     cfg = cfg or assumptions()
     seen = int((chk.status == "Seen").sum())
+    partly = int((chk.status == "Partly seen").sum())
     tot = int(chk.status.isin(["Seen", "Partly seen", "Not seen yet"]).sum())
     cats = chk[chk.check_id.isin(["S02", "S03", "S04", "S05"])]
     fell = int((cats.status == "Payments fell").sum())
@@ -92,7 +93,7 @@ def status(bids, chk, plan, matched, mfr=None, cfg=None):
     st6, pr6 = results_row(mfr)
     return pd.DataFrame([
         (1, "Bid statewide contracts for shared vendors", "Ready", f"{len(bids)} vendors ranked; ${bids.low.sum() / 1e6:,.1f}M–${bids.high.sum() / 1e6:,.1f}M a year", "opp"),
-        (2, "Confirm which reported savings recur", "Tracking", f"{seen} of {tot} checks seen in payments; {int(chk.changed.sum())} changed since last run", "track"),
+        (2, "Confirm which reported savings recur", "Tracking", f"{seen} seen and {partly} partly seen in payments, of {tot} checks; {int(chk.changed.sum())} changed since last run", "track"),
         (3, "Name the seven renegotiated contracts", "Categories tracked",
          f"4 contract types named in GMI's report are checked against payments; payments fell for {fell} of 4; vendors still unnamed", "track"),
         (4, "Plan the rest of the path to $50M", "Plan reaches $50M" if reach else "Gap remains",

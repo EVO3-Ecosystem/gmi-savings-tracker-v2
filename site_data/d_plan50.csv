@@ -1,5 +1,5 @@
 step,action,basis,saving,low,high,tab,cumulative
-1,Keep GMI's current savings going,forecast FY2027 spending × the rate GMI reported for each area,29640863.64,29640863.64,29640863.64,calc,29640863.64
+1,Apply GMI's reported savings rates,forecast FY2027 spending × the rate GMI reported for each area,29640863.64,29640863.64,29640863.64,calc,29640863.64
 2,Statewide contract: Carroll Independent Fuel,assumed 3.5% of $65.6M paid by 48 agencies (assumed range 2-5%),2294682.06,1311246.89,3278117.23,opp,31935545.7
 3,Statewide contract: Carahsoft,assumed 3.5% of $57.4M paid by 38 agencies (assumed range 2-5%),2009015.21,1148008.69,2870021.73,opp,33944560.91
 4,Statewide contract: Shi International,assumed 3.5% of $52.5M paid by 39 agencies (assumed range 2-5%),1835999.76,1049142.72,2622856.8,opp,35780560.67

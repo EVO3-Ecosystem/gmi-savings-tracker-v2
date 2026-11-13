@@ -84,13 +84,14 @@ savings:
   before_fy: 2025              # a check compares payments in this year ...
   after_fy: 2026               # ... with this year
   seen_share: 0.5              # "Seen" when payments fell by at least this share of the reported saving
+  counted_status: [Saved in FY2026, Under way]   # only these items' amounts are measured against payments; projected ones are not due yet
   vendor_moves:
     years: [2024, 2025, 2026]  # the three years shown; the last two are compared
     min_agencies: 5            # GMI renegotiated statewide procurement contracts: vendors paid by this many agencies
     min_before: 1000000        # and paid at least this in the earlier year
     top: 40                    # the largest decreases shown
     excluded_agency_codes: [CAPITAL, D06, D25, R13, R14, R30, R95]   # operating spending only; public higher education out of GMI baselines
-    not_procurement: "CONSTRUCT|PAVING|CONTRACTING|MCO|HEALTH PLAN|PARTNERS MCO|TRUST|BANK|SCHOOL|ACADEMY|UNIVERSITY|COLLEGE|HOSPITAL|COUNTY|CITY OF|\\bJV\\b|BUS SALES|NOVA BUS|INSURANCE|MEDICAL CENTER|YESHIVA|TALMUD|BNOS|ROOF|MECHANICAL|CORPS OF ENGINEERS|HEALTH|TITLE|RESCUE|BUILDERS|EXCAVAT|BRIDGE|STEEL|CONCRETE"
+    not_procurement: "CONSTRUCT|PAVING|CONTRACTING|MCO|HEALTH PLAN|PARTNERS MCO|TRUST|BANK|SCHOOL|ACADEMY|UNIVERSITY|COLLEGE|HOSPITAL|COUNTY|CITY OF|\\bJV\\b|BUS SALES|NOVA BUS|INSURANCE|MEDICAL CENTER|YESHIVA|TALMUD|BNOS|ROOF|MECHANICAL|CORPS OF ENGINEERS|HEALTH|TITLE|RESCUE|BUILDERS|EXCAVAT|BRIDGE|STEEL|CONCRETE|HOME OF|\\bARC OF|BOYS & GIRLS|EASTER SEALS|GOODWILL|HUMANIM|INSTITUTIONS & ALTERNATIVES|STAR COMMUNITY|SHORE UP|MARITIME ADV TRAINING"   # last group: health and human-service non-profits, which the payments data does not flag
 
 # Recommendations (src/models/recommendations.py): the Overview's six recommendations as tracked tables.
 recommendations:

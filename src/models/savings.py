@@ -110,17 +110,21 @@ def status(d_sav, f_chk, run_id, history=None, cfg=None):
     """The status of every payment check this run, with the previous run's status (from `history`, a frame of past runs).
 
     With a reported saving: Seen when payments fell by at least half of it, Partly seen when they fell by less, Not seen
-    yet when they did not fall. Without one: Payments fell / Payments did not fall."""
+    yet when they did not fall. Only items whose status is in counted_status (saved or under way) count toward the reported
+    saving; a check whose items are all projected is Projected only. Without any figure: Payments fell / Payments did not fall."""
     cfg = cfg or assumptions()
     before, after = cfg["before_fy"], cfg["after_fy"]
     paid = f_chk.groupby(["check_id", "fiscal_year"]).paid.sum().unstack(fill_value=0)
-    rep = d_sav.dropna(subset=["reported_low"]).assign(mid=lambda x: (x.reported_low + x.reported_high) / 2).groupby("check_id").mid.sum()
+    fig = d_sav.dropna(subset=["reported_low"]).assign(mid=lambda x: (x.reported_low + x.reported_high) / 2)
+    counted = cfg.get("counted_status")
+    rep = (fig[fig.status.isin(counted)] if counted and "status" in fig else fig).groupby("check_id").mid.sum()
+    proj = fig.groupby("check_id").mid.sum()
     rows = []
     for cid, r in paid.iterrows():
         b, a = r.get(before, 0), r.get(after, 0)
         rp = rep.get(cid)
         drop = b - a
-        st = (("Payments fell" if drop > 0 else "Payments did not fall") if not rp else
+        st = ("Projected only" if not rp and proj.get(cid) else ("Payments fell" if drop > 0 else "Payments did not fall") if not rp else
               ("Seen" if drop >= cfg["seen_share"] * rp else "Partly seen" if drop > 0 else "Not seen yet"))
         rows.append({"check_id": cid, "item": d_sav[d_sav.saving_id == cid].item.iloc[0], "reported": rp, "before": b, "after": a, "status": st})
     cur = pd.DataFrame(rows)

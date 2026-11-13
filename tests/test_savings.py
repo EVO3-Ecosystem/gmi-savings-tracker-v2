@@ -82,6 +82,15 @@ def test_status_rules_with_and_without_a_reported_saving():
     assert V.status(d, f, "R1").previous_status.isna().all() and not V.status(d, f, "R1").changed.any()  # no history yet
 
 
+def test_only_saved_or_under_way_amounts_are_measured_and_all_projected_checks_say_so():
+    # A: saved $1M + projected $10M checked together; B: projected only. A falls by $0.6M, so Seen against the $1M counted.
+    d = pd.DataFrame({"saving_id": ["A", "A2", "B"], "item": list("abc"), "reported_low": [1e6, 10e6, 2e6], "reported_high": [1e6, 10e6, 2e6],
+                      "status": ["Saved in FY2026", "Projected", "Projected"], "check_id": ["A", "A", "B"]})
+    f = pd.DataFrame({"check_id": list("AABB"), "fiscal_year": [2025, 2026] * 2, "agency_code": "X", "paid": [10e6, 9.4e6, 5e6, 4e6]})
+    st = V.status(d, f, "R1").set_index("check_id")
+    assert dict(st.status) == {"A": "Seen", "B": "Projected only"} and st.loc["A", "reported"] == 1e6
+
+
 def test_previous_status_and_changed_come_from_the_last_other_run():
     d = pd.DataFrame({"saving_id": ["A"], "item": ["a"], "reported_low": [1e6], "reported_high": [1e6], "check_id": ["A"]})
     f = pd.DataFrame({"check_id": ["A", "A"], "fiscal_year": [2025, 2026], "agency_code": "X", "paid": [10e6, 9e6]})  # fell by the whole saving: Seen

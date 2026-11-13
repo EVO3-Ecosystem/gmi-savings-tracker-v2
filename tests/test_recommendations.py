@@ -31,12 +31,12 @@ def _plan_inputs(bids):
 def test_step_one_is_gmis_rate_times_the_fy2027_median_and_areas_without_a_rate_add_nothing():
     plan = R.plan50(*_plan_inputs([("V1", 100e6, 12)]))
     assert plan.step.iloc[0] == 1 and plan.saving.iloc[0] == 10e6  # 10% of Telecom's FY2027 $100M, not its FY2026 value
-    assert plan.action.iloc[0] == "Keep GMI's current savings going"
+    assert plan.action.iloc[0] == "Apply GMI's reported savings rates"
 
 
 def test_contracts_are_added_until_the_target_is_reached_and_then_nothing_more():
     plan = R.plan50(*_plan_inputs([("V1", 600e6, 12), ("V2", 600e6, 10), ("V3", 600e6, 10)]))  # 3.5% of $600M = $21M each
-    assert list(plan.action) == ["Keep GMI's current savings going", "Statewide contract: V1", "Statewide contract: V2"]  # $10M + $21M + $21M >= $50M
+    assert list(plan.action) == ["Apply GMI's reported savings rates", "Statewide contract: V1", "Statewide contract: V2"]  # $10M + $21M + $21M >= $50M
     assert plan.cumulative.iloc[-1] == pytest.approx(52e6) and plan.saving.iloc[1] == pytest.approx(21e6) and plan.tab.iloc[1] == "opp"
     assert plan.basis.iloc[1] == "assumed 3.5% of $600.0M paid by 12 agencies (assumed range 2-5%)"
 
@@ -66,7 +66,7 @@ def test_status_rows_state_the_key_numbers():
     plan = pd.DataFrame({"cumulative": [20e6, 51e6], "low": [20e6, 20e6], "high": [20e6, 45e6]})
     st = R.status(bids, chk, plan, 0.987, (2957, 108, 111, 106)).set_index("rec")
     assert st.loc[1, "progress"] == "2 vendors ranked; $3.5M–$7.5M a year"
-    assert st.loc[2, "progress"] == "1 of 3 checks seen in payments; 1 changed since last run"
+    assert st.loc[2, "progress"] == "1 seen and 1 partly seen in payments, of 3 checks; 1 changed since last run"
     assert "payments fell for 3 of 4" in st.loc[3, "progress"]
     assert st.loc[4, "status"] == "Plan reaches $50M" and st.loc[4, "progress"] == "2 steps to $51.0M a year at the assumed rates; $40.0M–$65.0M across the assumed ranges"
     assert st.loc[5, "progress"] == "98.7% of FY2026 payments matched to an agency"
