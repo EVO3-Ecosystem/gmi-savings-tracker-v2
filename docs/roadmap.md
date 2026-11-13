@@ -2,6 +2,17 @@
 
 Six phases over about eight weeks; each phase's gate must pass before the next starts. Full plan: the *Maryland Transparency Data — Dev Wiki*, Roadmap & build plan tab.
 
+```mermaid
+timeline
+    title Phases 1–6 as of Nov 9, 2026
+    Phase 1 — Extract : Complete, Oct 28, 2026 : two consecutive runs matched the portal's row counts
+    Phase 2 — Database : Complete, Oct 29, 2026 : 30 of 30 checks pass; yearly totals tie to the portal to the cent
+    Phase 3 — Reference data : Complete, Oct 29, 2026 : match rates equal the dashboard's
+    Phase 4 — Marts & dashboard : Complete, Nov 2, 2026 : 21 base dashboard files reproduced exactly or explained
+    Phase 5 — Analytics : Mostly complete, Nov 9, 2026 : all 44 dashboard files built from marts; LightGBM challenger, review queue and revenue corridor in : still open — site cross-checks, detector backtest
+    Phase 6 — Automate & document : Open : scheduled runs, DVC local store, optional Postgres, freshness alerts, read-only MCP server
+```
+
 | Phase | Weeks | Build | Gate | Status |
 |---|---|---|---|---|
 | 0. Align | done | Data dictionary, gap analysis, API references, reference lists | Team signs off on definitions | Done |
@@ -103,7 +114,9 @@ Dashboard-level gaps added in the *GMI Dashboard Optimization Roadmap v2* (Claud
 
 **Review check.** An outside review of this repo was right that CI is failing (every push from Nov 2 to Nov 6, 11 runs in a row; last green Oct 29) but wrong about the cause: the error is `ModuleNotFoundError: No module named 'src'` at test collection, not network calls. The root cause was packaging, not the pytest import path: setuptools auto-discovery exposed `pipeline` instead of `src` in the editable install, and `tests/test_governance.py` (Nov 2) was the first test to import `src.pipeline`. **Fixed Nov 6, 2026** by declaring `src` and `src.pipeline` in `pyproject.toml` (PR 6); `main` is green again. PR 7 untracked the stale `src/*.egg-info` and set read-only workflow token permissions. Still open: require the `test` check on `main` (branch protection, a repo setting) and bump the Node 20 actions (`checkout@v4`, `setup-python@v5`), which only warn. It also described the repo as static CSVs or SQLite, which it isn't, and said Phase 5 must reproduce the 21 base files, which are already reproduced.
 
-**Ideas register.** 49 unique ideas from the review: 9 done, 25 adopt, 9 adapt, 6 decline. Declined, with reasons: OData (SODA covers it), subcontractor data (no public source), State Police dashboard (out of scope), revenue forecasting with XGBoost/LightGBM (no revenue data; the same models are used for spending), Prophet or Orbit seasonality (annual data only), random forest fiscal-stress classifier (no labeled stress events), switching to Seaborn or Plotly (d3 and matplotlib already use the validated palette).
+**Ideas register.** 49 unique ideas from the review: 9 done, 25 adopt, 9 adapt, 6 decline. Declined, with reasons: OData (SODA covers it), subcontractor data (no public source), State Police dashboard (out of scope), Prophet or Orbit seasonality (annual data only), random forest fiscal-stress classifier (no labeled stress events), switching to Seaborn or Plotly (d3 and matplotlib already use the validated palette). ~~Revenue forecasting~~ was declined for lack of revenue data; **reversed Nov 9, 2026**: a sourced General Fund revenue history (FY2017–FY2026, Comptroller closeouts and Board of Revenue Estimates reports, row-level citations in `reference/gf_revenue_history.csv`) made it possible, and `src/models/revenue.py` now forecasts FY2027 with a rolling-origin backtest against the naive baseline.
+
+**Phase 3/5 build-out, Nov 9, 2026.** The analytics layer is in place: the LightGBM quantile challenger (`f_challenger`, adopted for 1,083 of 2,609 agency x code series where it beats naive in rolling validation), a simulated statewide FY2026 corridor (`d_challenger_total`: $4.5B–$6.8B around a $5.0B midpoint, against the $4.8B working budget), the Isolation Forest review queue (`review_queue`: 2,459 flags at 3% contamination, with per-flag review status on the Opportunities tab), the General Fund revenue corridor (`f_revenue`: FY2027 midpoint $29.7B, 80% range $28.7B–$31.2B), agency peer clusters (`agency_clusters`: K-Means on spending mix, k = 3 by silhouette with a no-singleton rule) drawn as the consolidation treemap, and the spending-to-results mart (`results_trend`: 2,367 MFR measures with 3+ actual years next to real budget change; endpoint ratios beyond 20x dropped as parse artifacts). A new Forecasts & results tab carries the corridors and the results table; the header shows a portal-freshness pill off `sources`. 100 build checks (99 pass, 1 warning — forecast calibration measured in-sample), 36 dashboard page tests, and the full pytest suite are green.
 
 | Step | Adds | Gate |
 |---|---|---|
@@ -140,3 +153,25 @@ Researched for each open suggestion; what is done is marked, the rest is the sta
 | Actions security | Read-only default token, third-party actions pinned to full commit SHAs with a version comment, `persist-credentials: false`, Dependabot to keep pins current ([guide](https://boostsecurity.io/blog/how-to-secure-github-actions), [pinning notes](https://medium.com/@jordanritter/security-hardening-github-workflows-at-scale-d291a33774e1)) | Done: all three actions at v7 (Node 24), pinned; `.github/dependabot.yml` added |
 | Forecast evaluation | Rolling-origin (walk-forward) evaluation, never shuffled folds; every model compared with the naive last-value baseline on the same origins and horizons; MASE scale from each origin's own training history ([tsCV](https://pkg.robjhyndman.com/forecast/reference/tsCV.html), [workflow](https://metricgate.com/blogs/workflow-for-validating-a-forecasting-model/), [Cerqueira et al. 2020](https://web3.arxiv.org/abs/1905.11744), [Hyndman and Koehler 2006](https://www.doi.org/10.1016/J.IJFORECAST.2006.03.001)); ranges judged by coverage and the interval score ([Gneiting and Raftery 2007](https://apps.dtic.mil/sti/html/tr/ADA459827/index.html)) | Done for the forecasts (Nov 7): the model is chosen by rolling-origin MASE (changes Utilities from drift to naive), an equal-weight combination was scored and not adopted, and the ranges were measured: they cover 63.5% against a nominal 80% (warning on every build; ranges left as published, the owner's decision). Full sources and what was verified: `docs/models/forecast.md` |
 | Branch protection | Require the `test` check on `main` | Open: a repository setting only an admin can change. Steps: Settings > Rules > Rulesets > New branch ruleset, target `main`, enable "Require status checks to pass" and add `test` ([GitHub docs: about protected branches](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches)) |
+
+## Remaining phases to completion (Nov 9, 2026)
+
+With Phase 3 (ML analytics) and the v2 dashboard merged, what is left, in order:
+
+**Phase 5 closure — analytics depth (1-2 working sessions)**
+1. Detector backtest on the dashboard: `mart.d_detector_backtest` (detectors rerun as of FY2022-FY2024, flags followed one year) is built but not yet drawn; add a hit-rate card to the Opportunities tab and finish idea #16's headline wording ("leads worth up to").
+2. Cross-checks against the state sites (MD funding portal, eMaryland Marketplace) for a sample of findings; record in `reference/`.
+3. Macro regressors for the challenger and revenue models: BLS employment and BEA regional GDP (CPI already loaded); re-run rolling-origin adoption afterwards.
+4. Payee-type classifier (TF-IDF + logistic regression trained on rule-labeled payees) to catch rule misses, and grant-description clustering for overlap with contract spending.
+5. Review-queue CSV export from the page (status is currently stored in the browser only).
+6. `ops.model_registry` (model, training window, backtest score, adopt/discard) and a drift check (KS/PSI) comparing each run's payment distributions with the previous run.
+7. PCA scatter companion to the consolidation treemap (optional; the treemap already carries the groups).
+
+**Phase 6 — automate and publish (the demo path)**
+1. Merge the Phase 3 PR; the Pages workflow (`pages.yml`) then rebuilds the site from `site_data/` on every push to main.
+2. One admin step in repo Settings: Pages > Source > GitHub Actions. The dashboard is then live at `evo3-ecosystem.github.io/gmi-savings-tracker`.
+3. Monthly freshness loop: a scheduled workflow that runs extract + build + export + `make site-snapshot` and opens a PR when the portal's `rowsUpdatedAt` moves; failed stop checks open a GitHub issue instead of publishing.
+4. Branch protection on `main` (require the `test` check; admin setting).
+5. Optional: `make postgres`, DVC local store, read-only MCP server over the marts, `docker compose up`, NAICS/eMMA/SAM.gov contract research, analyst-detail toggle, roadmap timeline figure, PDF report, Power BI measures.
+
+**Gates that already exist and stay in force:** export refuses a failed build; every model must beat or match its naive baseline or it is not adopted; page tests (36) and pytest (150+) run before any publish; every column documented (1,518/1,518).

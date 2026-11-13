@@ -21,7 +21,8 @@ def _legacy(name):
 
 def _inputs():
     import duckdb
-    return O.inputs(duckdb.connect(str(DB), read_only=True))
+    code_agency, agency_year, payments, _ = O.inputs(duckdb.connect(str(DB), read_only=True))
+    return code_agency, agency_year, payments  # detect(..., clusters=None) keeps the legacy statewide benchmark
 
 
 def _legacy_payments(payments):

@@ -31,6 +31,12 @@ RATIO = ("_yoy", "_rate", "_mape", "_share", "growth", "share")
 PARTIAL = {"totals_by_fy": "drop", "f_vendor": "drop", "f_payee_type": "drop", "f_vendor_year": "drop", "f_vendor_detail": "drop", "f_area": ["payee_spend"], "f_agency": ["payments"]}
 
 
+# Decision-register additions published beside the dashboard datasets (#20 State Plan map, #21 OLA findings,
+# #23 outside economic context, #33 grant program families). Not in config/dashboard.yaml yet; exported when their
+# mart exists, flagged in the manifest.
+EXTRA = ("ola_findings", "d_state_plan", "d_econ", "grant_clusters", "grant_families")
+
+
 def _round(df):
     for c in df.columns:
         if pd.api.types.is_float_dtype(df[c]):
@@ -53,6 +59,7 @@ def main(argv=None):
     hold = True  # hold_partial_payments: the page has no partial-year label yet
     full = con.execute("SELECT max(fiscal_year) FROM core.fact_payment WHERE NOT partial_year").fetchone()[0]
     marts = {r[0] for r in con.execute("SELECT table_name FROM information_schema.tables WHERE table_schema = 'mart'").fetchall()}
+    files += [e for e in EXTRA if e in marts and e not in files]
     out = EXP / run_id
     if out.exists():
         shutil.rmtree(out)

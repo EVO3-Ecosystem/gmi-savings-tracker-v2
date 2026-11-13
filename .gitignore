@@ -7,3 +7,5 @@ __pycache__/
 legacy/gst/model/
 *.egg-info/
 /site/
+.venv/
+.dvc/tmp/

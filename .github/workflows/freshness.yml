@@ -1,0 +1,88 @@
+# Weekly freshness alert (decision register #14): for each of the five Socrata datasets, compare the
+# portal's rowsUpdatedAt with the checked-in snapshot (site_data/sources.csv, column portal_updated,
+# refreshed by `make site-snapshot`). When the portal is newer, open a GitHub issue; duplicates are
+# skipped by title. Manual run: Actions > Data freshness alerts > Run workflow.
+name: Data freshness alerts
+on:
+  schedule:
+    - cron: "17 6 * * 1" # Mondays 06:17 UTC (off-peak)
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+jobs:
+  freshness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with: {persist-credentials: false}
+      - name: Compare portal rowsUpdatedAt with the snapshot and open issues
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        env:
+          MD_SODA_APP_TOKEN: ${{ secrets.MD_SODA_APP_TOKEN }}
+        with:
+          script: |
+            const fs = await import("node:fs");
+
+            // Minimal CSV row parser (fields may be quoted and contain commas).
+            function parseRow(line) {
+              const out = [];
+              let cur = "", inQ = false;
+              for (let i = 0; i < line.length; i++) {
+                const c = line[i];
+                if (inQ) {
+                  if (c === '"') {
+                    if (line[i + 1] === '"') { cur += '"'; i++; } else inQ = false;
+                  } else cur += c;
+                } else if (c === '"') inQ = true;
+                else if (c === ",") { out.push(cur); cur = ""; }
+                else cur += c;
+              }
+              out.push(cur);
+              return out;
+            }
+
+            const lines = fs.readFileSync("site_data/sources.csv", "utf8").trim().split("\n");
+            const header = parseRow(lines[0]);
+            const col = (name) => header.indexOf(name);
+
+            const headers = { "User-Agent": "gmi-savings-tracker-freshness" };
+            if (process.env.MD_SODA_APP_TOKEN) headers["X-App-Token"] = process.env.MD_SODA_APP_TOKEN;
+
+            const { data: openIssues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, state: "open", per_page: 100,
+            });
+            const openTitles = new Set(openIssues.map((i) => i.title));
+
+            for (const line of lines.slice(1)) {
+              const row = parseRow(line);
+              const source = row[col("source")];
+              const datasetId = row[col("dataset_id")];
+              const title = row[col("title")];
+              const snapshot = row[col("portal_updated")]; // YYYY-MM-DD
+              const res = await fetch(`https://opendata.maryland.gov/api/views/${datasetId}.json`, { headers });
+              if (!res.ok) { core.warning(`${source}: portal metadata fetch failed (${res.status})`); continue; }
+              const meta = await res.json();
+              const portalDate = new Date(meta.rowsUpdatedAt * 1000).toISOString().slice(0, 10);
+              core.info(`${source} (${datasetId}): portal ${portalDate}, snapshot ${snapshot}`);
+              if (portalDate <= snapshot) continue;
+
+              const issueTitle = `Data freshness: ${title} updated on portal`;
+              if (openTitles.has(issueTitle)) { core.info(`issue already open: ${issueTitle}`); continue; }
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title: issueTitle,
+                body: [
+                  `The portal's \`rowsUpdatedAt\` for **${title}** (\`${datasetId}\`) is **${portalDate}**,`,
+                  `newer than the checked-in snapshot's \`portal_updated\` of **${snapshot}** (\`site_data/sources.csv\`).`,
+                  "",
+                  "Refresh with:",
+                  "```sh",
+                  "make extract && make build && make export && make site-snapshot",
+                  "```",
+                  "then commit the updated `site_data/`.",
+                ].join("\n"),
+              });
+              core.notice(`opened issue: ${issueTitle}`);
+            }

@@ -1,0 +1,2 @@
+method,growth,n_actual,last_actual_fy,horizon_fy,cpi_extension_rate,naive_mase,trend_mase,drift_mase,trend_cpi_mase,chosen_mase,coverage_80,note
+Log-linear trend,0.0614,10,2026,2027,0.0382,1.37,0.94,0.97,1.77,0.94,0.6,"Total GF revenue as reported, one-time items included (FY2021 FEMA/TEDCO, FY2023 $800M Blueprint distribution, FY2024 $150M LITRF transfer, FY2026 $405M extraordinary)."

@@ -1,0 +1,18 @@
+# Add patterns of files dvc should ignore, which could improve
+# the performance. Learn more at
+# https://dvc.org/doc/user-guide/dvcignore
+
+# Python / tooling caches — never relevant to pipeline state
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.venv/
+*.egg-info/
+
+# Local-only state that must never be treated as pipeline data:
+# data/ itself is a DVC pipeline output (dvc.yaml) and stays out of git via .gitignore, as today.
+# The files below are transient side files inside data/ that no stage declares.
+data/*.wal
+data/md_transparency.building*
+data/md_transparency.failed.duckdb

@@ -5,7 +5,10 @@ Four detectors scan every controllable spending code at every agency (FY2025 act
 private vendors. Each finding carries a baseline, a likely saving and a low-high range, and the evidence behind it.
 Findings at the same agency and spending code are not added twice: the larger one is kept.
 
-  peer gap     an agency spends more per budgeted position on a spending code than three in four agencies;
+  peer gap     an agency spends more per budgeted position on a spending code than three in four agencies in its
+               spending-mix peer group (mart.agency_clusters, K-Means on the latest actual year; the statewide
+               benchmark is the fallback when the agency is unclustered or its cluster has fewer than
+               peer_gap.min_agencies agencies with data on the code);
                saving = 5-15% of the spending above that 75th percentile, at most 3-10% of the agency's spending on the code
   growth       an agency's spending on a code grew 25+ points faster than the state's over FY2022-FY2025;
                saving = 10-30% of the growth above the state's pace
@@ -19,7 +22,9 @@ The saving rates are screening percentages, not forecasts, and the findings are 
 views count the same spending, and only the two budget detectors are de-duplicated against each other. Every threshold
 and rate lives in config/assumptions.yaml.
 Differences from the legacy script: an agency's name is its latest one (the legacy script took whichever row came
-first), and the inputs are this pipeline's marts.
+first), the inputs are this pipeline's marts, and the peer gap benchmark is the agency's own spending-mix cluster
+when mart.agency_clusters is built (the legacy script benchmarked statewide; detect(..., clusters=None) reproduces
+that behavior exactly).
 """
 import re
 from pathlib import Path
@@ -40,10 +45,13 @@ def _latest_names(agency_year):
     return agency_year.sort_values("fiscal_year", ascending=False).drop_duplicates("agency_code").set_index("agency_code").agency
 
 
-def detect(code_agency, agency_year, payments, cfg=None):
+def detect(code_agency, agency_year, payments, cfg=None, clusters=None):
     """code_agency: budget by fiscal_year, stage, agency_code, code, comptroller_subobject_name, controllable, area.
     agency_year: agency_code, agency, fiscal_year, fte. payments: fiscal_year, agency_code, vendor, area, amount,
-    is_government, passthrough. Returns the findings, largest likely saving first, with ids O001, O002, ..."""
+    is_government, passthrough. clusters: optional agency_code, cluster, cluster_name (mart.agency_clusters); when
+    given, the peer gap benchmark is the agency's own spending-mix cluster, with the statewide benchmark as the
+    fallback for unclustered agencies and for code/cluster groups smaller than peer_gap.min_agencies.
+    Returns the findings, largest likely saving first, with ids O001, O002, ..."""
     cfg = cfg or assumptions()
     y, y0, py = cfg["current_fy"], cfg["base_fy"], cfg["payments_fy"]
     pg, gr, tl, lv = cfg["peer_gap"], cfg["growth"], cfg["tail_spend"], cfg["leverage"]
@@ -58,14 +66,36 @@ def detect(code_agency, agency_year, payments, cfg=None):
     pe = cur[(cur.fte >= pg["min_positions"]) & (cur.budget > 0)].copy()
     pe["per"] = pe.budget / pe.fte
     st = pe.groupby("code").per.agg(med="median", p75=lambda s: s.quantile(pg["percentile"]), n="count")
-    pe = pe.join(st, on="code")
+    q = lambda s: s.quantile(pg["percentile"])  # noqa: E731
+    if clusters is not None:
+        cm = clusters.drop_duplicates("agency_code").set_index("agency_code")
+        pe["cluster"] = pe.agency_code.map(cm.cluster)
+        pe["cname"] = pe.agency_code.map(cm.cluster_name)
+        cl = pe[pe.cluster.notna()].groupby(["code", "cluster"]).per.agg(cmed="median", cp75=q, cn="count")
+        pe = pe.join(cl, on=["code", "cluster"]).join(st.rename(columns={"med": "smed", "p75": "sp75", "n": "sn"}), on="code")
+        own = pe.cn.notna() & (pe.cn >= pg["min_agencies"])  # a big enough cluster of the agency's own peers
+        pe["med"] = np.where(own, pe.cmed, pe.smed)
+        pe["p75"] = np.where(own, pe.cp75, pe.sp75)
+        pe["n"] = np.where(own, pe.cn, pe.sn)
+        peer_set = pd.Series(np.where(own, "cluster", "statewide"), index=pe.index)
+    else:
+        pe = pe.join(st, on="code")
+        peer_set = None
     hit = pe[(pe.n >= pg["min_agencies"]) & (pe.per > pe.p75) & (pe.budget >= pg["min_budget"])].copy()
-    gap = (hit.per - hit.p75) * hit.fte  # only the spending above three in four agencies
+    gap = (hit.per - hit.p75) * hit.fte  # only the spending above three in four peers
     hit["low"] = np.minimum(pg["share_low"] * gap, pg["cap_low"] * hit.budget)
     hit["high"] = np.minimum(pg["share_high"] * gap, pg["cap_high"] * hit.budget)
     hit["detector"] = "Peer gap"
-    hit["evidence"] = [f"${p:,.0f} per position vs ${q:,.0f} at the 75th percentile of {int(n)} agencies (median ${m:,.0f}); agencies differ in mission, "
-                       f"so only {pg['share_low'] * 100:.0f}-{pg['share_high']:.0%} of the excess is counted" for p, q, m, n in zip(hit.per, hit.p75, hit.med, hit.n)]
+    rate = f"agencies differ in mission, so only {pg['share_low'] * 100:.0f}-{pg['share_high']:.0%} of the excess is counted"
+    if peer_set is None:
+        hit["evidence"] = [f"${p:,.0f} per position vs ${q75:,.0f} at the 75th percentile of {int(n)} agencies (median ${m:,.0f}); {rate}"
+                           for p, q75, m, n in zip(hit.per, hit.p75, hit.med, hit.n)]
+    else:
+        hit["evidence"] = [f"${p:,.0f} per position vs ${q75:,.0f} at the 75th percentile of "
+                           + (f"the {int(n)} agencies in its spending-mix peer group ({cnm})" if s == "cluster"
+                              else f"{int(n)} agencies statewide")
+                           + f" (median ${m:,.0f}); {rate}"
+                           for p, q75, m, n, s, cnm in zip(hit.per, hit.p75, hit.med, hit.n, peer_set.loc[hit.index], hit.cname)]
     out.append(hit)
     # growth above the state's pace
     old = c[c.fiscal_year == y0].groupby(key, dropna=False).budget.sum().rename("old")
@@ -143,19 +173,26 @@ def excluded_agencies():
 
 
 def inputs(con):
-    """The three inputs, read from the marts, without the agencies left out of GMI savings baselines."""
+    """The three detector inputs plus each agency's spending-mix cluster (mart.agency_clusters, None when the
+    clustering step has not built the table yet), without the agencies left out of GMI savings baselines."""
     code_agency = con.execute("""SELECT b.fiscal_year, s.stage, b.agency_code, b.object_name, b.subobject_code AS code,
           b.subobject_name AS comptroller_subobject_name, b.controllable, b.focus_area AS area, sum(b.budget) AS budget
         FROM core.fact_budget_scope b JOIN ref.dim_stage s USING (fiscal_year) GROUP BY ALL""").df()
     agency_year = con.execute("SELECT agency_code, agency, fiscal_year, fte FROM mart.agency_year").df()
     payments = con.execute("SELECT fiscal_year, agency_code, vendor, area, amount, is_government, passthrough FROM mart.payment_area").df()
+    clusters = None
+    if con.execute("SELECT count(*) FROM information_schema.tables WHERE table_schema = 'mart' AND table_name = 'agency_clusters'").fetchone()[0]:
+        clusters = con.execute("SELECT agency_code, cluster, cluster_name FROM mart.agency_clusters").df()
     out = excluded_agencies()
-    return code_agency[~code_agency.agency_code.isin(out)], agency_year, payments[~payments.agency_code.isin(out)].reset_index(drop=True)
+    if clusters is not None:
+        clusters = clusters[~clusters.agency_code.isin(out)].reset_index(drop=True)
+    return (code_agency[~code_agency.agency_code.isin(out)], agency_year,
+            payments[~payments.agency_code.isin(out)].reset_index(drop=True), clusters)
 
 
 def write(con, cfg=None):
-    code_agency, agency_year, payments = inputs(con)
-    opps, bids = detect(code_agency, agency_year, payments, cfg), bid_list(payments, agency_year, cfg)
+    code_agency, agency_year, payments, clusters = inputs(con)
+    opps, bids = detect(code_agency, agency_year, payments, cfg, clusters), bid_list(payments, agency_year, cfg)
     for name, df in (("d_opps", opps), ("d_bid_list", bids)):
         con.register("_df", df)
         con.execute(f"CREATE OR REPLACE TABLE mart.{name} AS SELECT * FROM _df")

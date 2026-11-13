@@ -107,4 +107,43 @@ def build(con):
         con.execute(f"CREATE OR REPLACE TABLE mart.{name} AS SELECT * FROM _df")
         con.unregister("_df")
         done.append(name)
+    done += reference_tables(con)
     return done
+
+
+def reference_tables(con):
+    """Hand-kept reference CSVs the dashboard reads as marts (decision register #20 State Plan map, #21 OLA findings).
+
+    ref tables hold the CSV exactly as kept; these marts attach the budget agency's current name and type the numbers,
+    so the recommendations layer and the export can use them without re-parsing the CSVs."""
+    done = []
+    if _has(con, "ref", "ola_findings"):
+        con.execute("""CREATE OR REPLACE TABLE mart.ola_findings AS
+          SELECT o.agency_code, coalesce(nullif(d.agency_name, ''), o.agency_name) AS agency_name, o.audit_unit,
+                 CAST(o.report_date AS DATE) AS report_date, CAST(o.findings AS INTEGER) AS findings,
+                 CAST(o.repeat_findings AS INTEGER) AS repeat_findings, CAST(o.redacted_findings AS INTEGER) AS redacted_findings,
+                 o.report_url, o.note
+          FROM ref.ola_findings o LEFT JOIN ref.dim_agency d USING (agency_code)""")
+        done.append("ola_findings")
+    if _has(con, "ref", "state_plan_map"):
+        con.execute("""CREATE OR REPLACE TABLE mart.d_state_plan AS
+          SELECT m.agency_code, coalesce(nullif(d.agency_name, ''), m.agency_name) AS agency_name,
+                 CAST(m.priority_number AS INTEGER) AS priority_number, m.priority_area, m.citation_url
+          FROM ref.state_plan_map m LEFT JOIN ref.dim_agency d USING (agency_code)
+          ORDER BY CAST(m.priority_number AS INTEGER), m.agency_code""")
+        done.append("d_state_plan")
+    # #23: the outside economic context series on one fiscal-year spine, for the dashboard and the heatmap figure
+    parts = [("cpi_fy", "cpi_avg"), ("fact_md_employment", "employment_thousands"),
+             ("fact_md_gdp", "real_gdp_millions"), ("fact_population", "population")]
+    have = [(t, c) for t, c in parts if _has(con, "core", t)]
+    if have:
+        joins = " ".join(f"LEFT JOIN core.{t} USING (fiscal_year)" for t, _ in have)
+        con.execute(f"""CREATE OR REPLACE TABLE mart.d_econ AS SELECT s.fiscal_year, {", ".join(c for _, c in have)}
+          FROM (SELECT DISTINCT fiscal_year FROM core.fact_budget) s {joins} ORDER BY 1""")
+        done.append("d_econ")
+    return done
+
+
+def _has(con, schema, table):
+    return con.execute("SELECT count(*) FROM information_schema.tables WHERE table_schema = ? AND table_name = ?",
+                       [schema, table]).fetchone()[0] > 0

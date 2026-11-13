@@ -29,6 +29,9 @@ DATASETS = {  # dataset id on the dashboard -> published table
     "f_grants": "f_grants", "f_fund_source": "f_fund_source", "f_program": "f_program", "f_budget_vs_pay": "f_budget_vs_pay", "f_overlap": "f_overlap",
     "d_payment_screen": "d_payment_screen", "d_payment_screen_summary": "d_payment_screen_summary",
     "d_source_issues": "d_source_issues",
+    "review_queue": "review_queue", "f_challenger": "f_challenger", "d_challenger_backtest": "d_challenger_backtest", "d_challenger_total": "d_challenger_total",
+    "f_revenue": "f_revenue", "d_revenue_backtest": "d_revenue_backtest", "d_revenue_model": "d_revenue_model",
+    "results_trend": "results_trend", "agency_clusters": "agency_clusters", "ola_findings": "ola_findings",
 }
 OPTIONAL = {"d_source_issues"}  # drawn when published; the page says so when they are not (the site's loader skips them if missing)
 AREAS = ['IT hardware, software & services', 'Fleet & fuel', 'Utilities & facility energy', 'Real estate & leases', 'Print, copy & mail', 'Telecom']
@@ -51,7 +54,9 @@ window.addEventListener('load',run);</script>"""
 def combos(latest=2025):
     y = latest
     return [
-        ("default (all actual years)", {}, ["over", "areas", "track", "opp", "calc", "vend", "agency", "budget"]),
+        ("default (all actual years)", {}, ["over", "areas", "track", "opp", "calc", "fcast", "vend", "agency", "budget"]),
+        ("forecasts and results, one agency", {"agencies": ["__TOP1__"]}, ["fcast", "opp"]),
+        ("forecasts and results, budget stage", {"stage": "budget"}, ["fcast", "areas"]),
         ("vendors, one agency and one year", {"agencies": ["__TOP1__"], "years": [y]}, ["vend", "detail:vendor:Verizon"]),
         ("vendors, one area, budget years", {"areas": ["Telecom"], "stage": "budget"}, ["vend"]),
         ("vendors, FY2023 and two areas", {"years": [2023], "areas": ["Fleet & fuel", "Telecom"]}, ["vend", "detail:vendor:Element Fleet"]),

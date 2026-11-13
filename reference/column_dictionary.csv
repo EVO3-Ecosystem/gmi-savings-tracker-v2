@@ -497,3 +497,117 @@ dataset,ref.source_notes,reference,"Short dataset key, as in config/datasets.yam
 note,ref.source_notes,reference,A reviewed note about where the source differs from what its portal page says
 checked_on,ref.source_notes,reference,Date the note was checked
 checked_by,ref.source_notes,reference,Who checked the note
+flag_id,,derived,"Review-queue flag identifier (A001, A002, ...), largest anomaly score first"
+score,,derived,Isolation-forest anomaly score (higher = more unusual)
+why,,derived,Plain-language reasons the row was flagged (its two most extreme features)
+rule_detector_overlap,,derived,"Rule detector that already covers the row (Opportunity detector, Bid list), or none"
+model,,derived,Forecasting model that produced the row
+adopted,,derived,Whether the challenger beat the naive baseline for this series in rolling validation
+naive_mase,,derived,Mean absolute scaled error of the naive forecast over the rolling origins
+challenger_mase,,derived,Mean absolute scaled error of the challenger over the rolling origins
+series_scored,,derived,Agency x spending-code series scored at that origin
+mean_mase,,derived,Mean absolute scaled error over every series scored at that origin
+coverage_80,,derived,Share of outcomes inside the model's p10-p90 band (nominal 80%)
+mean_width_log,,derived,Mean width of the p10-p90 band in log points (narrower is better at equal coverage)
+n_series,d_challenger_total,derived,Agency x spending-code series in the statewide simulation
+n_adopted,d_challenger_total,derived,Series using the challenger (the rest use the naive last-actual forecast)
+bootstrap_paths,,derived,Simulated paths behind an uncertainty band
+n_actual,d_revenue_model,derived,Number of sourced actual years in the history
+horizon_fy,d_revenue_model,derived,Last fiscal year the revenue forecast reaches
+cpi_extension_rate,d_revenue_model,derived,Trailing average CPI growth used to extend CPI beyond its last complete fiscal year
+trend_cpi_mase,d_revenue_model,derived,Mean absolute scaled error of the trend + CPI candidate over the rolling origins
+chosen_mase,d_revenue_model,derived,Mean absolute scaled error of the kept revenue model over the rolling origins
+coverage_80,d_revenue_model,derived,Share of rolling backtest outcomes inside the kept model's p10-p90 band (nominal 80%)
+years_actual,results_trend,derived,Actual years with a numeric value inside the measure's window
+first_value,results_trend,derived,The measure's actual value in first_fy
+last_value,results_trend,derived,The measure's actual value in last_fy
+value_change,results_trend,derived,Change in the outcome over the window as a share of the first year
+first_budget_real,results_trend,derived,"Agency budget in first_fy, adjusted to the latest complete year's dollars"
+last_budget_real,results_trend,derived,"Agency budget in last_fy, adjusted to the latest complete year's dollars"
+budget_change_real,results_trend,derived,Change in the agency's real (CPI-adjusted) budget over the same window as a share of the first year
+outcome_minus_spend,results_trend,derived,"value_change minus budget_change_real; positive means outcomes grew faster than real spending (side by side, not cause and effect)"
+cluster,agency_clusters,derived,K-Means cluster of the agency's latest-actual-year controllable spending mix (z-scored area shares; k chosen by silhouette)
+cluster_name,agency_clusters,derived,The cluster's two dominant areas by mean share
+top_area,agency_clusters,derived,The area with the largest share of the agency's controllable spending
+k_chosen,agency_clusters,derived,The number of clusters chosen by silhouette score inside the configured range
+silhouette,agency_clusters,derived,Silhouette score of the chosen clustering (higher = better separated)
+last_actual_fy,d_revenue_model,derived,Last fiscal year with a sourced actual in the revenue history
+trend_mase,d_revenue_model,derived,Mean absolute scaled error of the log-linear trend candidate over the rolling origins
+drift_mase,d_revenue_model,derived,Mean absolute scaled error of the drift candidate over the rolling origins
+gf_revenue_millions,ref.gf_revenue_history,reference,"Total General Fund revenue, budgetary basis, in millions of dollars"
+employment_thousands,raw.bls_employment,source,"Maryland total nonfarm employment in thousands, not seasonally adjusted (BLS series SMU24000000000000001), monthly"
+employment_thousands,core.fact_md_employment,source,"Calendar-year average of the monthly BLS Maryland total nonfarm employment series (thousands, NSA)"
+real_gdp_millions,"raw.bea_md_gdp,core.fact_md_gdp",source,"Maryland real gross domestic product, all industries, millions of chained 2017 dollars (BEA SAGDP9 GDP-by-state bulk file, GeoFIPS 24000 LineCode 1)"
+priority_number,"ref.state_plan_map,mart.d_state_plan,d_state_plan",reference,"Moore-Miller State Plan priority (1-10 from the 2024 State Plan; 11 = government modernization and cost savings, Executive Order 01.01.2025.08)"
+priority_area,"ref.state_plan_map,mart.d_state_plan,d_state_plan",reference,State Plan priority area name
+citation_url,"ref.state_plan_map,mart.d_state_plan,d_state_plan",reference,Link to the source for the priority mapping
+audit_unit,"ref.ola_findings,mart.ola_findings,ola_findings",reference,The audited unit when the OLA report covers part of the department
+report_date,"ref.ola_findings,mart.ola_findings,ola_findings",reference,Publication date of the OLA fiscal compliance audit report
+findings,"ref.ola_findings,mart.ola_findings,ola_findings",reference,"Findings disclosed in the published report, including redacted cybersecurity findings"
+repeat_findings,"ref.ola_findings,mart.ola_findings,ola_findings",reference,"Findings repeated in full or part from the preceding audit report, per the report's own status review"
+redacted_findings,"ref.ola_findings,mart.ola_findings,ola_findings",reference,Findings redacted from the public report under State Government Article 2-1224(i) (cybersecurity)
+report_url,"ref.ola_findings,mart.ola_findings,ola_findings",reference,Link to the audit report PDF on ola.maryland.gov
+grant_id,"mart.grant_clusters,grant_clusters",derived,"Stable identifier of a grants row: hash of fiscal year, grantor, grantee, description, amount and ZIP as published"
+top_terms,"mart.grant_clusters,mart.grant_families,grant_clusters,grant_families",derived,The family's five highest-weight terms by cluster centroid (the auditable label)
+k_chosen,"mart.grant_clusters,grant_clusters",derived,"The number of families chosen by the documented heuristic (sqrt of half the corpus, clamped to 5-40)"
+cluster,"mart.grant_clusters,mart.grant_families,grant_clusters,grant_families",derived,"K-Means cluster of the grant description's TF-IDF vector (k by the documented sqrt heuristic, fixed seed)"
+employment_thousands,"mart.d_econ,d_econ",source,"Calendar-year average Maryland total nonfarm employment, thousands (BLS SMU24000000000000001), on the fiscal year the calendar year mostly overlaps"
+real_gdp_millions,"mart.d_econ,d_econ",source,"Maryland real GDP, all industries, millions of chained 2017 dollars (BEA SAGDP9), on the fiscal year the calendar year mostly overlaps"
+status,review_queue,derived,"Review state of the flag (Under review, Approved variance, Refer to OLA)"
+source,review_queue,derived,Which model grain raised the flag (Vendor-agency payments or Agency spending code)
+origin_fy,,derived,Rolling-validation origin: models trained through this fiscal year predicted the next
+p10,d_challenger_total,derived,10th percentile of the simulated statewide total (path-by-path sums; per-series quantiles are not additive)
+p50,d_challenger_total,derived,Median of the simulated statewide total
+p90,d_challenger_total,derived,90th percentile of the simulated statewide total
+scored,,derived,Rows the isolation forest scored in that grain
+kind,f_revenue,derived,Actual (sourced closeout/BRE history) or Forecast (modelled)
+value,f_revenue,derived,"General Fund revenue in dollars (actual years; budgetary basis, one-time items included)"
+method,d_revenue_model,derived,"The revenue model kept after the rolling-origin backtest (lowest mean MASE, ties to the simpler model)"
+growth,d_revenue_model,derived,Average yearly log growth of the revenue history (exp(b) - 1 of the log-linear fit)
+forecast_fy,d_revenue_backtest,derived,Fiscal year the backtest forecast was for (origin + 1)
+origin_fy,d_revenue_backtest,derived,Last training year of a rolling-origin backtest run
+covered,d_revenue_backtest,derived,Whether the outcome fell inside the p10-p90 band simulated at that origin
+first_fy,results_trend,derived,First actual fiscal year in the measure's window
+last_fy,results_trend,derived,Last actual fiscal year in the measure's window (never later than the last confirmed actual budget year)
+method,d_revenue_backtest,derived,Candidate model scored at that origin (naive last value; log-linear trend; drift; trend with CPI)
+outcome,d_revenue_backtest,derived,The actual General Fund revenue later observed for the forecast year
+forecast,d_revenue_backtest,derived,The candidate's point forecast made at that origin
+abs_error,d_revenue_backtest,derived,Absolute gap between the point forecast and the outcome
+mase,d_revenue_backtest,derived,Absolute error scaled by the naive in-sample step (mean absolute scaled error)
+p10,d_revenue_backtest,derived,10th percentile of the candidate's simulated band at that origin
+p50,d_revenue_backtest,derived,Median of the candidate's simulated band at that origin
+p90,d_revenue_backtest,derived,90th percentile of the candidate's simulated band at that origin
+payments,f_budget_vs_pay,derived,Payments to all payees that fiscal year (actual payments only)
+partial_year,f_budget_vs_pay,derived,1 when the payments year is still in progress (FY2026 payments are part-year)
+code,f_challenger,derived,Comptroller sub-object number for the spending code
+p10,f_challenger,derived,10th percentile of the one-year-ahead band from the series' kept model
+p50,f_challenger,derived,Median of the one-year-ahead band from the series' kept model
+p90,f_challenger,derived,90th percentile of the one-year-ahead band from the series' kept model
+description,f_grants,derived,Grant description as published
+category,f_grants,derived,Grant category as published
+zipcode,f_grants,derived,Recipient ZIP code as published
+in_payments,f_grants,derived,Whether the recipient name also appears in the payments data
+paid_same_fy,f_grants,derived,Whether the recipient was also paid through the payments data in the same fiscal year
+payments,f_overlap,derived,Payments to all payees that fiscal year (actual payments only)
+partial_year,f_overlap,derived,1 when the payments year is still in progress
+grants,f_overlap,derived,Grant awards that fiscal year
+p10,f_revenue,derived,10th percentile of the FY2027 revenue band (bootstrap over backtest residuals)
+p50,f_revenue,derived,Median of the FY2027 revenue band
+p90,f_revenue,derived,90th percentile of the FY2027 revenue band
+goal,results_trend,derived,Managing for Results goal the measure sits under
+objective,results_trend,derived,Managing for Results objective the measure sits under
+measure,results_trend,derived,Performance measure text from the agency's Managing for Results submission
+code,review_queue,derived,Comptroller sub-object number for a flagged spending code
+source,mart.review_queue_scored,derived,Which model grain was scored (Vendor-agency payments or Agency spending code)
+basis,ref.gf_revenue_history,reference,"How the figure was obtained (closeout letter, BRE board report, or derived from a cited growth rate)"
+source,ref.gf_revenue_history,reference,Document the figure was taken from
+family,"mart.grant_clusters,mart.grant_families,grant_clusters,grant_families",derived,"Grant program family: the K-Means cluster of the description's TF-IDF vector, named by its two highest-weight centroid terms"
+grants,"mart.grant_families,grant_families",derived,Described grants assigned to the family
+grantees,"mart.grant_families,grant_families",derived,Distinct grantees in the family
+total_amount,"mart.grant_families,grant_families",derived,"Grant dollars in the family, all years, nominal"
+year,raw.bls_employment,source,Calendar year of the BLS employment observation
+month,raw.bls_employment,source,Calendar month of the BLS employment observation
+months,core.fact_md_employment,derived,Months of the BLS employment series averaged into the calendar year
+description,"mart.grant_clusters,grant_clusters",portal,"Grant or loan program description as the grantor published it (free text, as listed)"
+category,"mart.grant_clusters,grant_clusters",portal,Grant or Loan
+zipcode,"mart.grant_clusters,grant_clusters",portal,Grantee ZIP code as published

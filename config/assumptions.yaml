@@ -171,8 +171,7 @@ source_issues:
   status_verified: "In published source (both State sites); ask the Comptroller's open-data team which FY2022 block is current"
   status_unverified: "Found in the extract; not yet checked against the source"
 
-# ======================================================================================================================
-# ML layer (src/models/payee_classifier.py, src/models/grant_groups.py; docs/models/payee_classifier.md, grant_groups.md).
+# ===============================================================================================================# ML layer (src/models/payee_classifier.py, src/models/grant_groups.py; docs/models/payee_classifier.md, grant_groups.md).
 # These produce leads and better labels, never savings. Every threshold below was set before the results were looked at.
 # ======================================================================================================================
 payee_classifier:
@@ -200,3 +199,40 @@ grant_groups:
                                 # the looser any-year reading is reported as multi_agency_any_year (grantor names resolved through reference/grantor_agency_aliases.csv)
   min_agencies: 2
   top_n_check: 20               # groups hand-checked in docs/models/grant_groups.md (by lead_fy dollars)
+# Anomaly flags and the review queue (src/models/anomaly.py): isolation forest on vendor-agency-year payments and
+# agency-code-year budgets. Change a value here, not in code.
+anomaly:
+  contamination: 0.03        # expected share of flagged rows in each grain
+  n_estimators: 200
+  seed: 11
+  min_history: 4             # a vendor-agency pair or agency-code line needs this many years before it is scored
+  min_amount: 100000         # never flag a year below this many dollars
+  max_flag_share: 0.10       # warn when flagged rows exceed this share of scored rows (should sit near contamination)
+
+# LightGBM quantile challenger (src/models/challenger.py): a global quantile model over agency x spending-code yearly
+# series, kept per series only where it beats the naive baseline in rolling-origin validation.
+challenger:
+  first_actual_fy: 2017
+  last_actual_fy: 2025
+  origins: [2022, 2023, 2024]  # rolling validation: train through each origin, predict the next year
+  min_scored_origins: 2      # adopt the challenger only for series scored at least this many times
+  lags: 3                    # lagged log-spend features per series
+  n_estimators: 300
+  learning_rate: 0.05
+  num_leaves: 31
+  min_child_samples: 10
+  seed: 11
+  bootstrap_paths: 4000      # simulated paths for the statewide corridor (per-series quantiles are not additive)
+revenue:
+  first_fy: 2017                # first year in reference/gf_revenue_history.csv
+  last_actual_fy: 2026          # FY2026 closed (Comptroller closeout, Sep 2026)
+  horizon_fy: 2027              # the budget year being decided
+  origins: [2021, 2022, 2023, 2024, 2025]  # rolling validation: train through each origin, predict the next year
+  min_train_years: 5
+  bootstrap_paths: 4000
+  backtest_bootstrap_paths: 1000
+  cpi_extension_years: 5        # trailing window for the CPI growth rate used beyond the last complete year
+  seed: 11
+clustering:
+  k_range: [3, 6]   # pick k by silhouette score inside this range
+  seed: 11

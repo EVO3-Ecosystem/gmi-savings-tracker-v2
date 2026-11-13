@@ -118,7 +118,7 @@ def run(code_agency, agency_year, payments, cfg=None, as_of=AS_OF):
 
 
 def write(con, cfg=None):
-    code_agency, agency_year, payments = opportunities.inputs(con)
+    code_agency, agency_year, payments, _ = opportunities.inputs(con)  # clusters are FY2025-only; the historical screen stays statewide
     df = run(code_agency, agency_year, payments, cfg)
     con.register("_df", df)
     con.execute("CREATE OR REPLACE TABLE mart.d_detector_backtest AS SELECT * FROM _df")

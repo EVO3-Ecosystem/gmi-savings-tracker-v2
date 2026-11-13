@@ -4,6 +4,12 @@
   federal_awards   USAspending: federal grants to governments in Maryland, by federal FY  -> federal vs General Fund savings
   population       Census Population Estimates, Maryland, July 1 each year              -> spending per resident
   mfr              DBM Managing for Results strategic plans (one PDF per agency), latest  -> recommendation 6: tie spending to results
+  bls_employment   BLS State Employment: Maryland total nonfarm (SMU24000000000000001), monthly -> outside economic data (#23)
+  bea_md_gdp       BEA GDP by state bulk file (SAGDP9): Maryland real GDP, yearly          -> outside economic data (#23)
+
+BEA's query API requires a free key this pipeline does not have; the published bulk download
+(apps.bea.gov/regional/zip/SAGDP.zip, the same SAGDP tables the news releases draw from) needs none,
+so bea_md_gdp uses it instead of an API key or a hand-compiled static CSV.
 
 Each source retries transient errors with backoff, checks its own result, and reports "pass" or "warn".
 A warning never blocks the core extract: these sources add context, the five portal datasets are the record.
@@ -73,6 +79,67 @@ def _cpi_bls(year):
             if d["period"].startswith("M") and d["period"] != "M13" and d["value"].replace(".", "", 1).isdigit():  # "-" = not published
                 rows.append({"year": int(d["year"]), "month": int(d["period"][1:]), "cpi": float(d["value"])})
     return pd.DataFrame(rows)
+
+
+def bls_employment_md(out):
+    """BLS public API v2 (no key needed for one series): Maryland total nonfarm employment, monthly, thousands,
+    not seasonally adjusted (series SMU24000000000000001). Mirrors _cpi_bls: 10-year windows, M13 annual averages skipped.
+    If BLS refuses (its daily limit is shared per IP without a key), the same series from FRED (MDNAN), as cpi() does."""
+    year = dt.date.today().year
+    try:
+        return _bls_employment_md(out, year)
+    except Exception as e:
+        t = pd.read_csv(pd.io.common.StringIO(_get("https://fred.stlouisfed.org/graph/fredgraph.csv?id=MDNAN", headers={}).text))
+        t.columns = ["date", "employment_thousands"]
+        t["date"] = pd.to_datetime(t.date)
+        df = pd.DataFrame({"year": t.date.dt.year, "month": t.date.dt.month,
+                           "employment_thousands": pd.to_numeric(t.employment_thousands, errors="coerce")}).dropna()
+        df = df[df.year >= 2007].drop_duplicates(["year", "month"]).sort_values(["year", "month"])
+        df.to_parquet(out / "bls_employment.parquet", index=False)
+        last = df.iloc[-1]
+        return {"rows": len(df), "detail": f"FRED MDNAN (= BLS SMU24000000000000001; BLS unavailable: {str(e)[:60]}): "
+                f"{df.year.min()}-01 to {int(last.year)}-{int(last.month):02d}", "ok": last.year >= year - 1}
+
+
+def _bls_employment_md(out, year):
+    rows = []
+    for start in range(2007, year + 1, 10):
+        body = {"seriesid": ["SMU24000000000000001"], "startyear": str(start), "endyear": str(min(start + 9, year))}
+        if os.environ.get("BLS_API_KEY"):
+            body["registrationkey"] = os.environ["BLS_API_KEY"]
+        j = _get("https://api.bls.gov/publicAPI/v2/timeseries/data/", "POST", json=body).json()
+        if j.get("status") != "REQUEST_SUCCEEDED":
+            raise RuntimeError(f"BLS: {j.get('message')}")
+        for d in j["Results"]["series"][0]["data"]:
+            if d["period"].startswith("M") and d["period"] != "M13" and d["value"].replace(".", "", 1).isdigit():  # "-" = not published
+                rows.append({"year": int(d["year"]), "month": int(d["period"][1:]), "employment_thousands": float(d["value"])})
+    df = pd.DataFrame(rows).drop_duplicates(["year", "month"]).sort_values(["year", "month"])
+    df.to_parquet(out / "bls_employment.parquet", index=False)
+    last = df.iloc[-1]
+    return {"rows": len(df), "detail": f"BLS SMU24000000000000001 (MD total nonfarm, NSA): {df.year.min()}-01 to {int(last.year)}-{int(last.month):02d}",
+            "ok": last.year >= year - 1}
+
+
+def bea_md_gdp(out):
+    """BEA GDP by state, Maryland, all-industry total real GDP (millions of chained 2017 dollars), yearly.
+
+    BEA's query API requires a free key; the published bulk zip (the SAGDP tables behind the GDP-by-state
+    releases) needs none, so it is pulled instead. SAGDP9__ALL_AREAS row GeoFIPS 24000, LineCode 1.
+    """
+    import io
+    import zipfile
+    z = zipfile.ZipFile(io.BytesIO(_get("https://apps.bea.gov/regional/zip/SAGDP.zip").content))
+    name = next(n for n in z.namelist() if n.startswith("SAGDP9__ALL_AREAS"))
+    t = pd.read_csv(z.open(name), dtype=str, skipinitialspace=True)
+    md = t[(t.GeoFIPS.str.strip().str.strip('"') == "24000") & (t.LineCode.str.strip().str.strip('"') == "1")].iloc[0]
+    years = [c for c in t.columns if c.strip().isdigit()]
+    df = pd.DataFrame({"calendar_year": [int(c) for c in years],
+                       "real_gdp_millions": [float(md[c]) for c in years]}).sort_values("calendar_year").reset_index(drop=True)
+    df.to_parquet(out / "bea_md_gdp.parquet", index=False)
+    return {"rows": len(df),
+            "detail": f"BEA SAGDP9 (real GDP by state, chained 2017 $): {df.calendar_year.min()}-{df.calendar_year.max()}, "
+                      f"{int(df.calendar_year.max())} ${df.real_gdp_millions.iloc[-1] / 1e3:,.1f}B",
+            "ok": df.calendar_year.max() >= dt.date.today().year - 2 and df.calendar_year.min() <= 2007}
 
 
 def federal_awards(out):
@@ -167,7 +234,8 @@ def mfr_reuse(out, prev_dir):
     return {"rows": n, "detail": f"DBM unavailable; reused {n} plans from {prev_dir.name}", "ok": False}
 
 
-SOURCES = {"cpi": cpi, "federal_awards": federal_awards, "population": population, "mfr": mfr}
+SOURCES = {"cpi": cpi, "federal_awards": federal_awards, "population": population, "mfr": mfr,
+           "bls_employment": bls_employment_md, "bea_md_gdp": bea_md_gdp}
 
 
 def run_all(out, prev_dir, log):

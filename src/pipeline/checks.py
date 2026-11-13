@@ -9,7 +9,7 @@ from pathlib import Path
 import pandas as pd
 import yaml
 
-from ..models import opportunities, recommendations, savings
+from ..models import anomaly, clustering, opportunities, recommendations, revenue, savings
 
 HIST = Path(__file__).resolve().parents[2] / "data" / "check_history.csv"
 SUM_COL = {"budget": ("core.fact_budget", "budget"), "fund": ("core.fact_fund", "budget"), "fte": ("core.fact_fte", "fte"),
@@ -113,10 +113,19 @@ def run(con, run_id, manifest):
     phase3(con, check, one)
     phase4(con, check, one)
     phase5(con, check, one)
+    phase5_challenger(con, check, one)
+    phase5_revenue(con, check, one)
     phase5_opportunities(con, check, one)
     phase5_savings(con, check, one)
     phase5_recommendations(con, check, one)
+    phase5_anomaly(con, check, one)
     phase5_reference_marts(con, check, one)
+    phase5_results(con, check, one)
+    phase5_clustering(con, check, one)
+    phase5_econ(con, check, one)
+    phase5_state_plan(con, check, one)
+    phase5_ola(con, check, one)
+    phase5_grant_clusters(con, check, one)
     phase5_higher_education(con, check, one, "highered" in loaded)
     phase5_deflator(con, check, one)
     phase5_payment_screen(con, check, one)
@@ -333,10 +342,10 @@ def phase5_savings(con, check, one):
     st = con.execute("SELECT status, count(*) FROM mart.d_savings_status WHERE reported IS NOT NULL GROUP BY 1").fetchall()
     quantified = sum(c for _, c in st)
     by = {s: c for s, c in st}
-    bad = one("SELECT count(*) FROM mart.d_savings_status WHERE status IS NULL OR status NOT IN ('Seen', 'Partly seen', 'Not seen yet', 'Payments fell', 'Payments did not fall')")
+    bad = one("SELECT count(*) FROM mart.d_savings_status WHERE status IS NULL OR status NOT IN ('Seen', 'Partly seen', 'Not seen yet', 'Payments fell', 'Payments did not fall', 'Projected only')")
     check("mart", "Every payment check has a status", bad == 0 and one("SELECT count(*) FROM mart.d_savings_status") > 0,
           f"{by.get('Seen', 0)} Seen, {by.get('Partly seen', 0)} Partly seen, {by.get('Not seen yet', 0)} Not seen yet among {quantified} checks with a reported saving "
-          "(payments fell by half the reported saving or more = Seen); the rest show only whether payments fell")
+          f"(payments fell by half the reported saving or more = Seen); {by.get('Projected only', 0)} projected only; the rest show only whether payments fell")
     cfg = savings.assumptions()["vendor_moves"]
     off = one("SELECT count(*) FROM mart.d_vendor_moves WHERE change > 0 OR agencies < ? OR fy2025 < ?", cfg["min_agencies"], cfg["min_before"])
     check("mart", "Vendor moves are decreases by vendors paid by enough agencies, largest first", off == 0 and one("SELECT count(*) FROM mart.d_vendor_moves") <= cfg["top"],
@@ -370,6 +379,131 @@ def phase5_recommendations(con, check, one):
           f"{share:.0%} of the path (${(top or 0) * share / 1e6:,.1f}M) is assumed savings on statewide contracts and fallback areas; the rest carries forward savings GMI reported", "warn")
 
 
+def phase5_challenger(con, check, one):
+    """LightGBM quantile challenger: ordered bands, honest adoption (kept only where it beat naive), and measured
+    band coverage reported as a warning."""
+    if not one("SELECT count(*) FROM information_schema.tables WHERE table_schema = 'mart' AND table_name = 'f_challenger'"):
+        return
+    bad = one("SELECT count(*) FROM mart.f_challenger WHERE NOT (p10 <= p50 AND p50 <= p90) OR p10 < 0")
+    check("mart", "Challenger forecast bands are ordered (p10 <= p50 <= p90) and non-negative", bad == 0, f"{bad} rows out of order")
+    bad = one("SELECT count(*) FROM mart.f_challenger WHERE adopted AND challenger_mase >= naive_mase")
+    check("mart", "Challenger adopted only where it beat the naive baseline in rolling validation", bad == 0, f"{bad} rows adopted without beating naive")
+    fy = one("SELECT max(fiscal_year) FROM ref.dim_stage WHERE stage = 'Actual'") + 1
+    wrong = one("SELECT count(*) FROM mart.f_challenger WHERE fiscal_year <> ?", fy)
+    check("mart", "Every challenger forecast is for the year after the last actual", wrong == 0,
+          f"FY{fy}; {one('SELECT count(*) FROM mart.f_challenger'):,} series forecast")
+    cov = con.execute("SELECT avg(coverage_80), avg(mean_width_log) FROM mart.d_challenger_backtest WHERE model LIKE 'LightGBM%'").fetchone()
+    adopted = one("SELECT count(*) FROM mart.f_challenger WHERE adopted")
+    check("mart", "Challenger p10-p90 bands cover about their nominal 80% in rolling validation", cov[0] is not None and abs(cov[0] - 0.8) <= 0.15,
+          f"{cov[0]:.1%} covered (nominal 80%), mean band {cov[1]:.2f} log points wide; challenger kept for {adopted:,} of "
+          f"{one('SELECT count(*) FROM mart.f_challenger'):,} series", "warn")
+    tot = con.execute("SELECT p10, p50, p90, n_series, n_adopted FROM mart.d_challenger_total").fetchone()
+    check("mart", "The statewide challenger corridor is ordered, covers every series, and sits near the last actual total",
+          tot is not None and 0 < tot[0] <= tot[1] <= tot[2] and tot[3] == one("SELECT count(*) FROM mart.f_challenger")
+          and tot[4] == adopted and 0.5 <= tot[1] / one("SELECT sum(controllable) FROM mart.agency_year WHERE fiscal_year = (SELECT max(fiscal_year) FROM ref.dim_stage WHERE stage = 'Actual')") <= 2,
+          f"FY{one('SELECT fiscal_year FROM mart.d_challenger_total')} corridor {tot[0]/1e9:.1f}B\u2013{tot[2]/1e9:.1f}B around {tot[1]/1e9:.1f}B, "
+          f"{tot[3]:,} series ({tot[4]:,} adopted), simulated path by path" if tot else "no statewide corridor row")
+
+
+def phase5_revenue(con, check, one):
+    """General Fund revenue forecast: sourced history, ordered bands, honest model choice (kept only where it beats
+    naive in the rolling backtest), measured band coverage as a warning, and a plausible FY2027 growth rate."""
+    if not one("SELECT count(*) FROM information_schema.tables WHERE table_schema = 'mart' AND table_name = 'f_revenue'"):
+        return
+    ref = revenue.history()
+    con.execute("SELECT 1").fetchall()  # complete the previous fetchone() result before register() (duckdb result-in-use)
+    con.register("_ref_rev", ref)
+    n, yrs = con.execute("SELECT count(*), count(DISTINCT fiscal_year) FROM mart.f_revenue WHERE kind = 'Actual'").fetchone()
+    gap = con.execute("""SELECT coalesce(max(abs(f.value - r.gf_revenue_millions * 1e6)), 0) FROM mart.f_revenue f
+        JOIN _ref_rev r ON r.fiscal_year = f.fiscal_year WHERE f.kind = 'Actual'""").fetchone()[0]
+    con.execute("SELECT 1").fetchall()  # complete pending fetchone() results before unregister()
+    con.unregister("_ref_rev")
+    check("mart", "Revenue actuals tie to the sourced closeout/BRE history to the dollar", n == yrs == len(ref) and gap <= 1,
+          f"{n} actual rows, {yrs} distinct years, largest gap ${gap:,.0f}")
+    bad = one("SELECT count(*) FROM mart.f_revenue WHERE kind = 'Forecast' AND (NOT (p10 <= p50 AND p50 <= p90) OR p10 < 0)")
+    check("mart", "Revenue forecast bands are ordered (p10 <= p50 <= p90) and non-negative", bad == 0, f"{bad} rows out of order")
+    m = con.execute("SELECT method, chosen_mase, naive_mase, growth, coverage_80 FROM mart.d_revenue_model").fetchone()
+    method, chosen, naive, growth, cov = m
+    simpler = {"Naive (last actual)": 0, "Log-linear trend": 1, "Drift (average yearly growth)": 2, "Trend + CPI": 3}
+    worse = con.execute("""SELECT count(*) FROM (SELECT method, avg(mase) m FROM mart.d_revenue_backtest GROUP BY 1)
+        WHERE m < ? - 1e-9 AND method NOT IN (SELECT method FROM mart.d_revenue_model)""", [chosen]).fetchone()[0]
+    check("mart", "Kept revenue model matches or beats every simpler candidate in the rolling backtest",
+          chosen <= naive + 1e-9 and worse == 0 and method in simpler,
+          f"kept {method} (MASE {chosen:.2f}); naive {naive:.2f}; {worse} candidates scored lower but were not kept", "warn")
+    check("mart", "Revenue forecast band covers about its nominal 80% on the rolling backtest", cov is not None and abs(cov - 0.8) <= 0.35,
+          f"{cov:.0%} of {one('SELECT count(*) FROM mart.d_revenue_backtest')} backtest forecasts covered (nominal 80%; five origins is a thin sample)", "warn")
+    last = one("SELECT value FROM mart.f_revenue WHERE kind = 'Actual' ORDER BY fiscal_year DESC LIMIT 1")
+    mid = one("SELECT p50 FROM mart.f_revenue WHERE kind = 'Forecast' ORDER BY fiscal_year LIMIT 1")
+    g = mid / last - 1
+    check("mart", "The FY2027 revenue midpoint implies a plausible one-year growth rate", -0.10 <= g <= 0.15,
+          f"FY2027 midpoint ${mid / 1e9:,.2f}B vs FY2026 actual ${last / 1e9:,.2f}B ({g:+.1%})")
+
+
+def phase5_anomaly(con, check, one):
+    """Review queue: well-formed flags, tied to the source rows to the dollar, and a flagged share near the configured
+    contamination (a much larger share means the forest is describing the data, not flagging it)."""
+    if not one("SELECT count(*) FROM information_schema.tables WHERE table_schema = 'mart' AND table_name = 'review_queue'"):
+        return
+    n, ids = con.execute("SELECT count(*), count(DISTINCT flag_id) FROM mart.review_queue").fetchone()
+    bad = one("""SELECT count(*) FROM mart.review_queue WHERE score IS NULL OR amount < 0
+        OR status NOT IN ('Under review', 'Approved variance', 'Refer to OLA') OR trim(why) = ''""")
+    check("mart", "Review-queue flags are well formed (unique id, score, non-negative amount, a status and a reason)",
+          n == ids and bad == 0, f"{n} flags, {ids} distinct ids, {bad} malformed")
+    off = one("""SELECT count(*) FROM (SELECT r.vendor, r.agency_code, r.fiscal_year, r.amount FROM mart.review_queue r
+        WHERE r.source = 'Vendor-agency payments') r LEFT JOIN mart.vendor_agency_year v
+        ON v.vendor = r.vendor AND v.agency_code = r.agency_code AND v.fiscal_year = r.fiscal_year
+        WHERE abs(coalesce(v.paid, -1) - r.amount) > 1""")
+    check("mart", "Every vendor flag ties to its vendor-agency-year row to the dollar", off == 0, f"{off} flags off")
+    scored = one("SELECT sum(scored) FROM mart.review_queue_scored")
+    cfg = anomaly.assumptions()
+    share = n / scored if scored else 0
+    check("mart", "Flagged share sits near the configured contamination", 0 < share <= cfg["max_flag_share"],
+          f"{n} flags from {scored:,} scored rows ({share:.1%}; contamination {cfg['contamination']:.0%})", "warn")
+    ov = one("SELECT count(*) FROM mart.review_queue WHERE rule_detector_overlap <> 'none'")
+    check("mart", "Rule-detector overlap recorded for every flag (review value beyond the detectors)", True,
+          f"{ov} of {n} flags already covered by the opportunity detectors or the bid list; the rest are new", "warn")
+
+
+def phase5_results(con, check, one):
+    """Spending-to-results trend: well-formed rows inside the actual years, tied to the measures they summarize."""
+    if not one("SELECT count(*) FROM information_schema.tables WHERE table_schema = 'mart' AND table_name = 'results_trend'"):
+        return
+    bad = one("""SELECT count(*) FROM mart.results_trend WHERE years_actual < 3 OR first_fy >= last_fy
+        OR first_value <= 0 OR last_value <= 0 OR first_budget_real <= 0
+        OR last_fy > (SELECT max(fiscal_year) FROM ref.dim_stage WHERE stage = 'Actual')""")
+    n = one("SELECT count(*) FROM mart.results_trend")
+    check("mart", "Spending-to-results rows are well formed and inside the confirmed actual years", bad == 0 and n > 0,
+          f"{n} measures with a trend; {bad} malformed")
+    orphans = one("""SELECT count(*) FROM mart.results_trend r WHERE NOT EXISTS (SELECT 1 FROM mart.agency_results a
+        WHERE a.agency_code = r.agency_code AND a.measure = r.measure AND a.kind = 'Actual'
+        AND a.fiscal_year = r.last_fy AND a.value = r.last_value)""")
+    check("mart", "Every spending-to-results endpoint ties to a measure row in agency_results", orphans == 0, f"{orphans} rows without a matching endpoint")
+    covered = con.execute("""SELECT (SELECT count(*) FROM mart.results_trend), (SELECT count(DISTINCT a.agency_code || a.measure) FROM mart.agency_results a
+        WHERE a.kind = 'Actual' AND a.value IS NOT NULL)""").fetchone()
+    check("mart", "Most measures with numeric actuals have enough history for a trend", covered[0] / covered[1] >= 0.5,
+          f"{covered[0]:,} of {covered[1]:,} measures with numeric actuals have 3+ actual years with positive endpoints", "warn")
+
+
+def phase5_clustering(con, check, one):
+    """Agency clusters: every agency with controllable actual spending is assigned exactly once, and the chosen k is
+    inside the configured range."""
+    if not one("SELECT count(*) FROM information_schema.tables WHERE table_schema = 'mart' AND table_name = 'agency_clusters'"):
+        return
+    cfg = clustering.assumptions()
+    n, dup = con.execute("SELECT count(*), count(*) - count(DISTINCT agency_code) FROM mart.agency_clusters").fetchone()
+    missing = one("""SELECT count(*) FROM mart.agency_rollup r WHERE r.fiscal_year = (SELECT max(fiscal_year) FROM ref.dim_stage WHERE stage = 'Actual')
+        AND r.controllable > 0 AND r.agency_code NOT IN (SELECT agency_code FROM mart.agency_clusters)""")
+    check("mart", "Every agency with controllable actual spending has exactly one cluster", dup == 0 and missing == 0 and n > 0,
+          f"{n} agencies clustered, {dup} duplicated, {missing} missing")
+    k, sil = con.execute("SELECT max(k_chosen), max(silhouette) FROM mart.agency_clusters").fetchone()
+    check("mart", "The chosen k sits inside the configured range with a positive silhouette",
+          cfg["k_range"][0] <= k <= cfg["k_range"][1] and sil > 0,
+          f"k = {k} (range {cfg['k_range'][0]}-{cfg['k_range'][1]}), silhouette {sil:.2f}")
+    sizes = con.execute("SELECT min(c), max(c) FROM (SELECT cluster, count(*) c FROM mart.agency_clusters GROUP BY 1)").fetchone()
+    check("mart", "No cluster is a singleton or holds most agencies", sizes[0] >= 2 and sizes[1] <= 0.6 * n,
+          f"cluster sizes {sizes[0]}-{sizes[1]} of {n} agencies", "warn")
+
+
 def phase5_reference_marts(con, check, one):
     """The measures catalog describes exactly the year-over-year columns the marts have, and the stage evidence agrees with the
     confirmed stages and with the database's own totals."""
@@ -396,6 +530,93 @@ def phase5_reference_marts(con, check, one):
         AND p.fiscal_year NOT IN (SELECT fiscal_year FROM mart.stage_evidence)""")
     check("mart", "Every year whose portal stage label differs from the confirmed stage has evidence", unevidenced == 0,
           f"{unevidenced} years where the portal's label and the confirmed stage differ but no evidence is recorded")
+
+
+def phase5_econ(con, check, one):
+    """Outside economic data (decision register #23): BLS Maryland employment and BEA Maryland GDP. Context sources:
+    warnings, never blocking, like CPI and population above."""
+    tabs = {r[0] for r in con.execute("SELECT table_name FROM information_schema.tables WHERE table_schema = 'core'").fetchall()}
+    if "fact_md_employment" in tabs:
+        n, y0, y1 = con.execute("SELECT count(*), min(calendar_year), max(calendar_year) FROM core.fact_md_employment").fetchone()
+        partial = one("SELECT count(*) FROM core.fact_md_employment WHERE months < 11 AND calendar_year < (SELECT max(calendar_year) FROM core.fact_md_employment)")
+        check("core", "Maryland employment (BLS) covers every budget year", y0 <= 2016 and y1 >= dt.date.today().year - 1 and partial == 0,
+              f"{n} calendar years {y0}-{y1}, {partial} partial years before the current one", "warn")
+    else:
+        check("core", "Maryland employment (BLS) covers every budget year", False, "BLS employment not downloaded this run", "warn")
+    if "fact_md_gdp" in tabs:
+        n, y0, y1 = con.execute("SELECT count(*), min(calendar_year), max(calendar_year) FROM core.fact_md_gdp").fetchone()
+        pos = one("SELECT count(*) FROM core.fact_md_gdp WHERE real_gdp_millions <= 0")
+        check("core", "Maryland GDP (BEA) covers every budget year", n >= 20 and y0 <= 2016 and y1 >= dt.date.today().year - 2 and pos == 0,
+              f"{n} calendar years {y0}-{y1}; {int(y1)} real GDP ${one('SELECT max(real_gdp_millions) FROM core.fact_md_gdp') / 1e3:,.1f}B (chained 2017)", "warn")
+    else:
+        check("core", "Maryland GDP (BEA) covers every budget year", False, "BEA GDP not downloaded this run", "warn")
+    if one("SELECT count(*) FROM information_schema.tables WHERE table_schema = 'mart' AND table_name = 'd_econ'"):
+        n = one("SELECT count(*) FROM mart.d_econ")
+        yrs = one("SELECT count(DISTINCT fiscal_year) FROM core.fact_budget")
+        mism = 0
+        if "fact_md_gdp" in tabs:
+            mism = one("""SELECT count(*) FROM mart.d_econ e JOIN core.fact_md_gdp g USING (fiscal_year)
+                WHERE e.real_gdp_millions IS DISTINCT FROM g.real_gdp_millions""")
+        check("mart", "Economic context mart covers every budget year and ties to the core series", n == yrs and mism == 0,
+              f"{n} fiscal years on the budget spine, {mism} GDP mismatches", "warn")
+
+
+def phase5_state_plan(con, check, one):
+    """State Plan priorities map (decision register #20): hand-kept reference data, so malformed rows stop the build
+    like other reference rules; coverage is a warning."""
+    if not one("SELECT count(*) FROM information_schema.tables WHERE table_schema = 'ref' AND table_name = 'state_plan_map'"):
+        return
+    bad = one("""SELECT count(*) FROM ref.state_plan_map WHERE NOT regexp_full_match(priority_number, '[0-9]{1,2}')
+        OR trim(priority_area) = '' OR NOT citation_url LIKE 'http%'""")
+    codes = one("""SELECT count(*) FROM ref.state_plan_map m LEFT JOIN ref.dim_agency d USING (agency_code) WHERE d.agency_code IS NULL""")
+    dup = one("SELECT count(*) - count(DISTINCT agency_code) FROM ref.state_plan_map")
+    n = one("SELECT count(*) FROM ref.state_plan_map")
+    pri = one("SELECT count(DISTINCT priority_number) FROM ref.state_plan_map")
+    check("ref", "State Plan map: one row per agency, known codes, numbered priorities, a citation on every row",
+          bad == 0 and codes == 0 and dup == 0, f"{n} agencies mapped to {pri} priority areas; {bad} malformed rows, {codes} unknown agency codes, {dup} agencies mapped twice")
+    m = one("SELECT count(*) FROM mart.d_state_plan") if one(
+        "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'mart' AND table_name = 'd_state_plan'") else 0
+    check("mart", "State Plan mart carries every mapped agency", m == n, f"{m} mart rows of {n} reference rows", "warn")
+
+
+def phase5_ola(con, check, one):
+    """OLA audit findings (decision register #21): hand-kept reference data; every row must cite a real report and the
+    repeat count cannot exceed the findings count."""
+    if not one("SELECT count(*) FROM information_schema.tables WHERE table_schema = 'ref' AND table_name = 'ola_findings'"):
+        return
+    bad = one("""SELECT count(*) FROM ref.ola_findings WHERE NOT regexp_full_match(report_date, '[0-9]{4}-[0-9]{2}-[0-9]{2}')
+        OR CAST(findings AS INTEGER) <= 0 OR CAST(repeat_findings AS INTEGER) < 0 OR CAST(repeat_findings AS INTEGER) > CAST(findings AS INTEGER)
+        OR CAST(redacted_findings AS INTEGER) < 0 OR CAST(redacted_findings AS INTEGER) > CAST(findings AS INTEGER)
+        OR NOT report_url LIKE 'https://ola.maryland.gov/%'""")
+    codes = one("SELECT count(*) FROM ref.ola_findings o LEFT JOIN ref.dim_agency d USING (agency_code) WHERE d.agency_code IS NULL")
+    n = one("SELECT count(*) FROM ref.ola_findings")
+    rep = one("SELECT sum(CAST(repeat_findings AS INTEGER)) FROM ref.ola_findings")
+    check("ref", "OLA findings: 10+ agencies, well-formed rows, every row cites its ola.maryland.gov report",
+          n >= 10 and bad == 0 and codes == 0, f"{n} agencies, {rep} repeat findings in the latest audits; {bad} malformed rows, {codes} unknown agency codes")
+    m = one("SELECT count(*) FROM mart.ola_findings") if one(
+        "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'mart' AND table_name = 'ola_findings'") else 0
+    check("mart", "OLA findings mart carries every audited agency", m == n, f"{m} mart rows of {n} reference rows", "warn")
+
+
+def phase5_grant_clusters(con, check, one):
+    """Grant program families (decision register #33): every described grant assigned exactly once, k inside the
+    documented heuristic range, every family named by its top terms, and the family summary ties to the assignments."""
+    if not one("SELECT count(*) FROM information_schema.tables WHERE table_schema = 'mart' AND table_name = 'grant_clusters'"):
+        return
+    from ..models import grant_clusters as gc
+    n, ids = con.execute("SELECT count(*), count(DISTINCT grant_id) FROM mart.grant_clusters").fetchone()
+    src = one("SELECT count(*) FROM core.fact_grant WHERE nullif(trim(description), '') IS NOT NULL")
+    check("mart", "Every described grant has exactly one program family", n == ids == src,
+          f"{n:,} assignments, {ids:,} distinct ids, {src:,} described grants in core")
+    k = one("SELECT max(k_chosen) FROM mart.grant_clusters")
+    blank = one("SELECT count(*) FROM mart.grant_clusters WHERE trim(family) = '' OR trim(top_terms) = ''")
+    check("mart", "Grant family k follows the documented heuristic and every family is named by its top terms",
+          gc.K_MIN <= k <= gc.K_MAX and blank == 0, f"k = {k} (range {gc.K_MIN}-{gc.K_MAX}), {blank} rows without a family name or top terms")
+    fam = one("SELECT coalesce(sum(grants), 0) FROM mart.grant_families")
+    orphan = one("""SELECT count(*) FROM (SELECT cluster FROM mart.grant_clusters GROUP BY 1) c
+        LEFT JOIN mart.grant_families f USING (cluster) WHERE f.cluster IS NULL""")
+    check("mart", "Grant family summary ties to the assignments", fam == n and orphan == 0,
+          f"{fam:,} grants in {one('SELECT count(*) FROM mart.grant_families')} families; {orphan} clusters without a family row")
 
 
 def phase5_higher_education(con, check, one, loaded):

@@ -20,8 +20,13 @@ readme-shots: site ; $(PY) -m src.pipeline.readme_shots
 docs:     ; $(PY) -m src.pipeline.governance $(if $(DASH),--dashboard $(DASH))
 site:     ; $(PY) -m src.pipeline.site $(SITE_FLAGS)
 site-snapshot: ; $(PY) -m src.pipeline.site --refresh-snapshot
+# Opt-in (decision #12): mirror the marts into a local Postgres. DuckDB stays the default.
+# Dry run without a database: make postgres DRY_RUN=1  (add SRC=--duckdb to read the marts instead of the CSV export)
+postgres:
+	$(if $(DRY_RUN),,$(if $(DATABASE_URL),,$(error DATABASE_URL is not set — point it at a local Postgres, e.g. export DATABASE_URL=postgresql://localhost:5432/md_marts (preview without connecting: make postgres DRY_RUN=1))))
+	$(PY) mcp_server/db/load_postgres.py $(if $(DRY_RUN),--dry-run) $(SRC)
 site-artifact: ; $(PY) -m src.pipeline.site --artifact $(or $(ARTIFACT_OUT),$${TMPDIR:-/tmp}/gmi-site-artifact)
 docs-strict: ; $(PY) -m src.pipeline.governance --strict $(if $(DASH),--dashboard $(DASH))
 
 .PHONY: readme-shots
-.PHONY: extract extract-full gate1 build gate3 all test test-fault docs docs-strict reconcile figures diagrams parity export snapshot restore site site-snapshot site-artifact
+.PHONY: extract extract-full gate1 build gate3 all test test-fault docs docs-strict reconcile figures diagrams parity export snapshot restore site site-snapshot site-artifact postgres

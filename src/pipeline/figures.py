@@ -10,6 +10,7 @@ from pathlib import Path
 
 import duckdb
 import matplotlib
+import matplotlib.colors
 import matplotlib.ticker
 
 matplotlib.use("Agg")
@@ -161,6 +162,48 @@ def check_history():
          "From data/check_history.csv. A failed stop check keeps the last good database and blocks publishing.")
 
 
+def correlation_heatmap(con):
+    """Correlation matrix of the forecast/challenger feature set (decision register #43): yearly statewide controllable
+    spending (nominal, real FY2026 dollars, and lagged one year) against the outside economic series the models can
+    draw on (CPI, Maryland employment, Maryland real GDP, population). Pearson r over the overlapping fiscal years."""
+    tabs = {r[0] for r in con.execute("SELECT table_name FROM information_schema.tables WHERE table_schema = 'core'").fetchall()}
+    d = con.execute("""SELECT s.fiscal_year, s.budget * CAST(d.factor AS DOUBLE) AS real, s.budget AS nominal
+        FROM (SELECT fiscal_year, sum(budget) budget FROM mart.f_scope WHERE scope = 'Controllable purchases' AND stage = 'Actual' GROUP BY 1) s
+        JOIN mart.d_deflator d USING (fiscal_year)""").df().set_index("fiscal_year").sort_index()
+    feat = pd.DataFrame({"Spend (nominal, $B)": d.nominal / 1e9,
+                         "Spend (real FY2026, $B)": d["real"] / 1e9})
+    feat["Spend (real, lag 1 yr)"] = feat["Spend (real FY2026, $B)"].shift(1)
+    if "cpi_fy" in tabs:
+        feat["CPI-U (BLS)"] = con.execute("SELECT fiscal_year, cpi_avg FROM core.cpi_fy").df().set_index("fiscal_year").cpi_avg
+    if "fact_md_employment" in tabs:
+        feat["MD employment (BLS, K)"] = con.execute(
+            "SELECT fiscal_year, employment_thousands FROM core.fact_md_employment WHERE months >= 11").df().set_index("fiscal_year").employment_thousands
+    if "fact_md_gdp" in tabs:
+        feat["MD real GDP (BEA, $B)"] = con.execute(
+            "SELECT fiscal_year, real_gdp_millions / 1000 AS g FROM core.fact_md_gdp").df().set_index("fiscal_year").g
+    if "fact_population" in tabs:
+        feat["MD population (M)"] = con.execute(
+            "SELECT fiscal_year, population / 1e6 AS p FROM core.fact_population").df().set_index("fiscal_year").p
+    corr = feat.corr()
+    n = len(corr)
+    fig, ax = plt.subplots(figsize=(10, 4.6))
+    cmap = matplotlib.colors.LinearSegmentedColormap.from_list("gmi", [C[4], SURF, C[0]])  # magenta - surface - blue
+    ax.imshow(corr, cmap=cmap, vmin=-1, vmax=1)
+    ax.set_xticks(range(n), corr.columns, rotation=25, ha="right", fontsize=8.5)
+    ax.set_yticks(range(n), corr.index, fontsize=8.5)
+    for i in range(n):
+        for j in range(n):
+            v = corr.iloc[i, j]
+            ax.text(j, i, f"{v:.2f}", ha="center", va="center", fontsize=8.5,
+                    color=SURF if abs(v) >= 0.6 else INK)
+    ax.grid(False)
+    yrs = feat.dropna().index
+    ax.set_title(f"Pearson correlation, FY{int(yrs.min())}-FY{int(yrs.max())} ({len(yrs)} years)", loc="left", fontsize=9.5)
+    save(fig, "correlation_heatmap.png", "What moves together: controllable spending and the Maryland economy",
+         "Yearly statewide controllable purchases (mart.f_scope x mart.d_deflator), CPI-U (core.cpi_fy), Maryland total nonfarm employment (BLS SMU24000000000000001),\n"
+         "Maryland real GDP (BEA SAGDP9, chained 2017 dollars) and population (Census). Calendar-year series are mapped to the fiscal year they mostly overlap.")
+
+
 def main():
     FIG.mkdir(parents=True, exist_ok=True)
     if (ROOT / "docs" / "reconciliation" / "by_year.csv").exists():
@@ -173,6 +216,7 @@ def main():
         budget_by_stage(con)
         vendor_concentration(con)
         concentration(con)
+        correlation_heatmap(con)
         con.close()
     else:
         print(f"database not found: {DB}; skipped rows, budget, vendor and HHI charts (existing PNGs left unchanged)")

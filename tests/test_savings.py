@@ -38,8 +38,10 @@ def test_the_reference_file_still_equals_the_legacy_items():
         # status is the one field that deliberately differs: on 2026-11-10 the "Reported" items were relabelled by how the
         # report words them (see STATUS_DECISION_2026_11_10); every other field still equals the legacy item.
         assert cur["status"] == STATUS_DECISION_2026_11_10.get(cur["id"], old["status"]), cur["id"]
-        assert (old["id"], old["ws"], old["item"], old["type"], old["check"], old["page"], old["quote"]) == \
-               (cur["id"], cur["ws"], cur["item"], cur["type"], cur["check"], cur["page"], cur["quote"])
+        # the item text may carry a fiscal-year tag on an event date (2026-11-13 fiscal-year review); otherwise unchanged
+        assert cur["item"].replace(", FY2026)", ")") == old["item"], cur["id"]
+        assert (old["id"], old["ws"], old["type"], old["check"], old["page"], old["quote"]) == \
+               (cur["id"], cur["ws"], cur["type"], cur["check"], cur["page"], cur["quote"])
         assert (old["lo"], old["hi"]) == (cur["lo"], cur["hi"])
 
 

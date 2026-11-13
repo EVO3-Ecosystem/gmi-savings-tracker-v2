@@ -33,7 +33,12 @@ def test_the_four_tables_match_the_legacy_scripts(tmp_path):
     d, f = V.check_payments(pay)
     legacy = V.assumptions()  # the legacy script leaves out only CAPITAL, D06 and D25; public higher education (Nov 9, 2026) is new
     legacy["vendor_moves"]["excluded_agency_codes"] = ["CAPITAL", "D06", "D25"]
-    for new, old in ((d, old_d), (f, old_f), (V.vendor_moves(pay, legacy), old_mv), (V.status(d, f, "RUN1"), old_st)):
+    # deliberate differences (Nov 13, 2026 accuracy review): non-profits dropped from vendor moves by name, checks measured
+    # only against saved or under-way amounts, and a fiscal-year tag on one event date; undone here to compare with legacy
+    legacy["vendor_moves"]["not_procurement"] = legacy["vendor_moves"]["not_procurement"].split("|HOME OF|")[0]
+    legacy.pop("counted_status", None)
+    d = d.assign(item=d["item"].str.replace(", FY2026)", ")", regex=False))
+    for new, old in ((d, old_d), (f, old_f), (V.vendor_moves(pay, legacy), old_mv), (V.status(d, f, "RUN1", cfg=legacy), old_st)):
         cols = [c for c in old.columns if not (old is old_d and c == "status")]  # d_savings status labels were deliberately refined 2026-11-10 (test_savings.STATUS_DECISION_2026_11_10)
         pd.testing.assert_frame_equal(new[cols].reset_index(drop=True), old[cols].reset_index(drop=True), check_dtype=False)
 

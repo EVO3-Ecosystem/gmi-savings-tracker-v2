@@ -33,6 +33,8 @@ Context source pulled: cpi,raw,ops.enrichment
 Context source pulled: federal_awards,raw,
 Context source pulled: population,raw,
 Context source pulled: mfr,raw,
+Context source pulled: bls_employment,raw,
+Context source pulled: bea_md_gdp,raw,
 FY2026 payment dollars matched to a budget agency,ref,core.fact_payment core.fact_payment_mapped ref.baseline_quality
 FY2027 (partial year) payment dollars matched,ref,core.fact_payment core.fact_payment_mapped
 Payment agency names mapped,ref,ref.map_payment_agency
@@ -69,6 +71,16 @@ Backtest ranges are ordered (p10 <= p50 <= p90),mart,mart.d_forecast_backtest
 Every forecast area is also scored against the State's plan for FY2026 and FY2027,mart,mart.d_forecast_backtest mart.d_forecast_model
 Published forecast ranges cover about their nominal share on the rolling backtest,mart,mart.d_forecast_calibration
 Chosen forecast model is no worse than the naive baseline in the rolling-origin backtest,mart,mart.d_forecast_backtest mart.d_forecast_model
+Challenger forecast bands are ordered (p10 <= p50 <= p90) and non-negative,mart,mart.f_challenger
+Challenger adopted only where it beat the naive baseline in rolling validation,mart,mart.f_challenger
+Every challenger forecast is for the year after the last actual,mart,mart.f_challenger ref.dim_stage
+Challenger p10-p90 bands cover about their nominal 80% in rolling validation,mart,mart.d_challenger_backtest mart.f_challenger
+"The statewide challenger corridor is ordered, covers every series, and sits near the last actual total",mart,mart.agency_year mart.d_challenger_total mart.f_challenger ref.dim_stage
+Revenue actuals tie to the sourced closeout/BRE history to the dollar,mart,mart.f_revenue
+Revenue forecast bands are ordered (p10 <= p50 <= p90) and non-negative,mart,mart.f_revenue
+Kept revenue model matches or beats every simpler candidate in the rolling backtest,mart,mart.d_revenue_backtest mart.d_revenue_model
+Revenue forecast band covers about its nominal 80% on the rolling backtest,mart,mart.d_revenue_backtest
+The FY2027 revenue midpoint implies a plausible one-year growth rate,mart,mart.f_revenue
 "Opportunity findings are well formed (low <= high, no duplicate id, one finding per agency and spending code)",mart,mart.d_opps
 Bid list vendors meet the agency and spend thresholds and are ranked by FY2026 payments,mart,mart.d_bid_list
 "Growth detector does not lean on findings that grew 1,000% or more (likely re-coding)",mart,mart.d_opps
@@ -81,9 +93,29 @@ All six recommendations have a status and a key number,mart,mart.d_rec_status
 "The path to $50M is numbered, adds up, and agrees with recommendation 4's status",mart,mart.d_plan50 mart.d_rec_status
 "Vendor drill-downs tie to their payee names, and every bid-list vendor has one",mart,mart.d_bid_list mart.d_vendor_names mart.f_vendor_detail
 Most of the path to $50M does not rest on assumed saving rates,mart,mart.d_plan50
+"Review-queue flags are well formed (unique id, score, non-negative amount, a status and a reason)",mart,mart.review_queue
+Every vendor flag ties to its vendor-agency-year row to the dollar,mart,mart.review_queue mart.vendor_agency_year
+Flagged share sits near the configured contamination,mart,mart.review_queue_scored
+Rule-detector overlap recorded for every flag (review value beyond the detectors),mart,mart.review_queue
 The measures catalog describes exactly the year-over-year columns of the marts,mart,mart.measures
 "Stage evidence agrees with the confirmed stages, with the database's whole-year totals, and with DBM's printed actuals",mart,core.fact_budget mart.stage_evidence ref.dim_stage
 Every year whose portal stage label differs from the confirmed stage has evidence,mart,core.fact_budget mart.stage_evidence ref.dim_stage
+Spending-to-results rows are well formed and inside the confirmed actual years,mart,mart.results_trend ref.dim_stage
+Every spending-to-results endpoint ties to a measure row in agency_results,mart,mart.agency_results mart.results_trend
+Most measures with numeric actuals have enough history for a trend,mart,mart.agency_results mart.results_trend
+Every agency with controllable actual spending has exactly one cluster,mart,mart.agency_clusters mart.agency_rollup ref.dim_stage
+The chosen k sits inside the configured range with a positive silhouette,mart,mart.agency_clusters
+No cluster is a singleton or holds most agencies,mart,mart.agency_clusters
+Maryland employment (BLS) covers every budget year,core,core.fact_md_employment
+Maryland GDP (BEA) covers every budget year,core,core.fact_md_gdp
+Economic context mart covers every budget year and ties to the core series,mart,core.fact_budget core.fact_md_gdp mart.d_econ
+"State Plan map: one row per agency, known codes, numbered priorities, a citation on every row",ref,ref.dim_agency ref.state_plan_map
+State Plan mart carries every mapped agency,mart,mart.d_state_plan
+"OLA findings: 10+ agencies, well-formed rows, every row cites its ola.maryland.gov report",ref,ref.dim_agency ref.ola_findings
+OLA findings mart carries every audited agency,mart,mart.ola_findings
+Every described grant has exactly one program family,mart,core.fact_grant mart.grant_clusters
+Grant family k follows the documented heuristic and every family is named by its top terms,mart,mart.grant_clusters
+Grant family summary ties to the assignments,mart,mart.grant_clusters mart.grant_families
 "Higher education dataset holds only its four agencies, none of them in the operating budget dataset",core,core.fact_budget core.fact_budget_highered
 "All-funds total including public higher education = operating budget + higher education (every year, to the dollar)",mart,core.fact_budget core.fact_budget_highered mart.d_all_funds ref.dim_stage
 Public higher education is kept out of every GMI savings baseline,mart,core.fact_budget_scope mart.d_opps mart.payment_area

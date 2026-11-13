@@ -1,0 +1,74 @@
+agency_code,agency,cluster,controllable,top_area,cluster_name,fiscal_year,k_chosen,silhouette
+J00,Department of Transportation,0,1607501428.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+M00,Maryland Department of Health,0,481624813.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+R00,State Department of Education,0,130665513.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+F50,Department of Information Technology,0,128634858.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+E75,Maryland Lottery and Gaming Control Agency,0,87659445.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+D78,Maryland Health Benefit Exchange,0,73174222.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+D38,State Board of Elections,0,45866495.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+E00,Comptroller of Maryland,0,39484269.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+B75,Legislative Branch,0,34410402.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+F10,Department of Budget and Management,0,25448133.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+T00,Department of Commerce,0,24580707.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+R15,Maryland Public Broadcasting Commission,0,15868921.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+D52,Maryland Department of Emergency Management,0,13687704.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+D29,Maryland Thoroughbred Racetrack Operating Authority,0,12823726.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+D13,Maryland Energy Administration,0,11156282.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+D28,Maryland Stadium Authority,0,10692593.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+L00,Department of Agriculture,0,10482764.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+E20,State Treasurer's Office,0,9551400.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+D23,Maryland Cannabis Administration,0,8038941.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+D18,Governor's Office for Children,0,5954049.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+D21,Governor's Office of Crime Prevention and Policy,0,4407275.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+D26,Department of Aging,0,3892997.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+C90,Public Service Commission,0,2838763.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+I00,Department of Service and Civic Innovation,0,2666124.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+D10,Executive Department - Governor,0,1836406.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+D91,West North Avenue Development Authority,0,1376280.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+D12,Department of Disabilities,0,934066.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+D27,Maryland Commission On Civil Rights,0,787312.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+D16,Secretary of State,0,642256.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+C96,Uninsured Employers' Fund,0,628605.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+D15,"Executive Department-Boards, Commissions and Offices",0,445799.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+G50,Maryland State Employees Supplemental Retirement Plans,0,298608.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+C91,Office of People's Counsel,0,276632.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+D11,Office of the Deaf and Hard of Hearing,0,215865.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+R12,Accountability and Implementation Board,0,185688.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+D73,Office of the Inspector General for Education,0,148871.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+C85,Maryland Tax Court,0,23618.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+D05,Board of Public Works,0,23517.0,Other controllable purchases,"Other controllable purchases / IT hardware, software & services",2025,3,0.31
+N00,Department of Human Services,1,388775134.0,Other controllable purchases,"IT hardware, software & services / Other controllable purchases",2025,3,0.31
+C00,Judiciary,1,133148234.0,"IT hardware, software & services","IT hardware, software & services / Other controllable purchases",2025,3,0.31
+P00,Maryland Department of Labor,1,100519773.0,"IT hardware, software & services","IT hardware, software & services / Other controllable purchases",2025,3,0.31
+W00,Department of State Police,1,79950624.0,Fleet & fuel,"IT hardware, software & services / Other controllable purchases",2025,3,0.31
+U00,Department of the Environment,1,19585466.0,Other controllable purchases,"IT hardware, software & services / Other controllable purchases",2025,3,0.31
+D80,Maryland Insurance Administration,1,17080816.0,"IT hardware, software & services","IT hardware, software & services / Other controllable purchases",2025,3,0.31
+S00,Department of Housing and Community Development,1,15662716.0,Other controllable purchases,"IT hardware, software & services / Other controllable purchases",2025,3,0.31
+E50,State Department of Assessments and Taxation,1,12986614.0,"IT hardware, software & services","IT hardware, software & services / Other controllable purchases",2025,3,0.31
+C80,Office of the Public Defender,1,12343180.0,"IT hardware, software & services","IT hardware, software & services / Other controllable purchases",2025,3,0.31
+R62,Maryland Higher Education Commission,1,8401413.0,"IT hardware, software & services","IT hardware, software & services / Other controllable purchases",2025,3,0.31
+G20,Maryland State Retirement and Pension Systems,1,7623946.0,"IT hardware, software & services","IT hardware, software & services / Other controllable purchases",2025,3,0.31
+C98,Workers' Compensation Commission,1,7373314.0,"IT hardware, software & services","IT hardware, software & services / Other controllable purchases",2025,3,0.31
+C81,Office of the Attorney General,1,6891356.0,Other controllable purchases,"IT hardware, software & services / Other controllable purchases",2025,3,0.31
+D53,Maryland Institute for Emergency Medical Services Systems,1,5182308.0,Telecom,"IT hardware, software & services / Other controllable purchases",2025,3,0.31
+D60,State Archives,1,2801145.0,"IT hardware, software & services","IT hardware, software & services / Other controllable purchases",2025,3,0.31
+E17,"Alcohol, Tobacco, and Cannabis Commission",1,2255543.0,"IT hardware, software & services","IT hardware, software & services / Other controllable purchases",2025,3,0.31
+D25,Interagency Commission On School Construction,1,1107068.0,"IT hardware, software & services","IT hardware, software & services / Other controllable purchases",2025,3,0.31
+C82,Office of the State Prosecutor,1,591562.0,Other controllable purchases,"IT hardware, software & services / Other controllable purchases",2025,3,0.31
+D76,Maryland Office of the Inspector General for Health,1,312125.0,"IT hardware, software & services","IT hardware, software & services / Other controllable purchases",2025,3,0.31
+C94,Subsequent Injury Fund,1,232763.0,Real estate & leases,"IT hardware, software & services / Other controllable purchases",2025,3,0.31
+D77,Prescription Drug Affordability Board,1,174140.0,Other controllable purchases,"IT hardware, software & services / Other controllable purchases",2025,3,0.31
+D74,Office of the Correctional Ombudsman,1,149210.0,Fleet & fuel,"IT hardware, software & services / Other controllable purchases",2025,3,0.31
+E80,Property Tax Assessment Appeals Boards,1,134737.0,Real estate & leases,"IT hardware, software & services / Other controllable purchases",2025,3,0.31
+Q00,Department of Public Safety and Correctional Services,2,286953839.0,Other controllable purchases,Other controllable purchases / Utilities & facility energy,2025,3,0.31
+K00,Department of Natural Resources,2,66246316.0,Other controllable purchases,Other controllable purchases / Utilities & facility energy,2025,3,0.31
+V00,Department of Juvenile Services,2,41660115.0,Other controllable purchases,Other controllable purchases / Utilities & facility energy,2025,3,0.31
+H00,Department of General Services,2,36740183.0,Other controllable purchases,Other controllable purchases / Utilities & facility energy,2025,3,0.31
+D50,Military Department,2,18932475.0,Other controllable purchases,Other controllable purchases / Utilities & facility energy,2025,3,0.31
+D55,Department of Veterans and Military Families,2,8015458.0,Other controllable purchases,Other controllable purchases / Utilities & facility energy,2025,3,0.31
+R99,Maryland School for the Deaf,2,7650986.0,Other controllable purchases,Other controllable purchases / Utilities & facility energy,2025,3,0.31
+D40,Department of Planning,2,2602294.0,Other controllable purchases,Other controllable purchases / Utilities & facility energy,2025,3,0.31
+R11,Maryland State Library Agency,2,1168097.0,Other controllable purchases,Other controllable purchases / Utilities & facility energy,2025,3,0.31
+D17,Historic St. Mary's City Commission,2,892456.0,Other controllable purchases,Other controllable purchases / Utilities & facility energy,2025,3,0.31
+D22,Maryland Commission on African American History and Culture,2,387492.0,Other controllable purchases,Other controllable purchases / Utilities & facility energy,2025,3,0.31
+D90,Canal Place Preservation and Development Authority,2,387063.0,Other controllable purchases,Other controllable purchases / Utilities & facility energy,2025,3,0.31

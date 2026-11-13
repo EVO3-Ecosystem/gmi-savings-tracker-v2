@@ -49,6 +49,59 @@ def test_peer_gap_needs_enough_agencies_positions_and_spending():
     assert O.detect(small, ay, NO_PAY).query("detector == 'Peer gap'").empty  # under $250k
 
 
+def _clusters(pairs):
+    """pairs: (agency, cluster, name). A spending-mix peer-group assignment like mart.agency_clusters."""
+    return pd.DataFrame([{"agency_code": a, "cluster": c, "cluster_name": n} for a, c, n in pairs])
+
+
+def test_peer_gap_benchmarks_against_the_agencys_own_cluster():
+    # D10 ($100k/position) is an outlier among its small-spender peers but below the statewide 75th percentile ($110k)
+    rows = [(a, "0801", 2025, 1_000_000.0) for a in TEN[:9]] + [("D10", "0801", 2025, 10_000_000.0)]
+    rows += [(f"E{i:02d}", "0801", 2025, 11_000_000.0) for i in range(1, 10)]
+    budget = _budget(rows)
+    ay = _agencies(TEN + [f"E{i:02d}" for i in range(1, 10)])
+    clusters = _clusters([(a, 0, "Small") for a in TEN] + [(f"E{i:02d}", 1, "Big") for i in range(1, 10)])
+    assert O.detect(budget, ay, NO_PAY).query("detector == 'Peer gap'").empty  # statewide, D10 is not above the 75th percentile
+    r = O.detect(budget, ay, NO_PAY, clusters=clusters).query("detector == 'Peer gap'")
+    assert list(r.agency_code) == ["D10"]
+    assert "$100,000 per position vs $10,000 at the 75th percentile of the 10 agencies in its spending-mix peer group (Small)" in r.evidence.iloc[0]
+    assert r.low.iloc[0] == 300_000 and r.high.iloc[0] == 1_000_000  # same excess math as the statewide case
+
+
+def test_peer_gap_within_a_big_spender_cluster_hides_a_statewide_outlier():
+    # P01 ($110k/position) beats the statewide 75th percentile but is ordinary among its big-spender peers ($200k each)
+    rows = [(f"F{i:02d}", "0801", 2025, 1_000_000.0) for i in range(1, 28)]  # 27 small spenders at $10k/position
+    rows += [(f"E{i:02d}", "0801", 2025, 20_000_000.0) for i in range(1, 9)] + [("P01", "0801", 2025, 11_000_000.0)]
+    budget = _budget(rows)
+    ay = _agencies([f"F{i:02d}" for i in range(1, 28)] + [f"E{i:02d}" for i in range(1, 9)] + ["P01"])
+    clusters = _clusters([(f"F{i:02d}", 0, "Small") for i in range(1, 28)]
+                         + [(f"E{i:02d}", 1, "Big") for i in range(1, 9)] + [("P01", 1, "Big")])
+    assert "P01" in set(O.detect(budget, ay, NO_PAY).query("detector == 'Peer gap'").agency_code)  # statewide p75 = $35k
+    assert O.detect(budget, ay, NO_PAY, clusters=clusters).query("detector == 'Peer gap'").empty  # within cluster 1, p75 = $200k
+
+
+def test_peer_gap_falls_back_to_statewide_for_a_tiny_cluster():
+    # D10's cluster has only five agencies with data on the code, below peer_gap.min_agencies (8)
+    rows = [(a, "0801", 2025, 1_000_000.0) for a in TEN[:4]] + [("D10", "0801", 2025, 10_000_000.0)]
+    rows += [(f"E{i:02d}", "0801", 2025, 1_000_000.0) for i in range(1, 10)]
+    budget = _budget(rows)
+    ay = _agencies(TEN[:4] + ["D10"] + [f"E{i:02d}" for i in range(1, 10)])
+    clusters = _clusters([(a, 0, "Small") for a in TEN[:4] + ["D10"]] + [(f"E{i:02d}", 1, "Other small") for i in range(1, 10)])
+    r = O.detect(budget, ay, NO_PAY, clusters=clusters).query("detector == 'Peer gap'")
+    assert list(r.agency_code) == ["D10"]
+    assert "$100,000 per position vs $10,000 at the 75th percentile of 14 agencies statewide (median $10,000)" in r.evidence.iloc[0]
+    assert r.low.iloc[0] == 300_000 and r.high.iloc[0] == 1_000_000
+
+
+def test_peer_gap_falls_back_to_statewide_for_an_unclustered_agency():
+    budget, ay = _peer_gap_case()
+    clusters = _clusters([(a, 0, "Small") for a in TEN[:9]])  # D10 has no cluster assignment
+    r = O.detect(budget, ay, NO_PAY, clusters=clusters).query("detector == 'Peer gap'")
+    assert list(r.agency_code) == ["D10"]
+    assert "75th percentile of 10 agencies statewide" in r.evidence.iloc[0]
+    assert r.low.iloc[0] == 300_000 and r.high.iloc[0] == 1_000_000
+
+
 def _growth_case(old=1_000_000.0):
     rows = [(a, "0902", 2022, 1_000_000.0) for a in TEN[:5]] + [("D06", "0902", 2022, old)]
     rows += [(a, "0902", 2025, 1_000_000.0) for a in TEN[:5]] + [("D06", "0902", 2025, 3_000_000.0)]

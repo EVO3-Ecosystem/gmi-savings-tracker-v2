@@ -43,6 +43,15 @@ f_fund_source: f_fund_source
 f_program: f_program
 f_budget_vs_pay: f_budget_vs_pay
 f_overlap: f_overlap
+review_queue: review_queue
+f_challenger: f_challenger
+d_challenger_backtest: d_challenger_backtest
+d_challenger_total: d_challenger_total
+f_revenue: f_revenue
+d_revenue_backtest: d_revenue_backtest
+d_revenue_model: d_revenue_model
+results_trend: results_trend
+agency_clusters: agency_clusters
 d_all_funds: d_all_funds    # all-funds budget including public higher education (4mca-332u), a separate labeled figure
 d_deflator: d_deflator      # CPI factor to FY2026 dollars and Maryland population, for the page's real / per-resident toggle
 d_payment_screen: d_payment_screen    # duplicate and split payment screen: flagged groups (leads to review, not errors)

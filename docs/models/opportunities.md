@@ -8,7 +8,7 @@
 
 | Detector | Looks at | Flags | Saving counted |
 |---|---|---|---|
-| Peer gap | FY2025 actual controllable spending per budgeted position, by spending code, agencies with 50+ positions and 8+ comparable agencies | an agency above the 75th percentile of its peers | 5-15% of the spending above the 75th percentile, at most 3-10% of the agency's spending on the code |
+| Peer gap | FY2025 actual controllable spending per budgeted position, by spending code, agencies with 50+ positions; since Nov 9, 2026 the peers are the agency's own spending-mix cluster (`mart.agency_clusters`), with the statewide benchmark as the fallback when the agency is unclustered or fewer than 8 cluster mates have data on the code | an agency above the 75th percentile of its peers | 5-15% of the spending above the 75th percentile, at most 3-10% of the agency's spending on the code |
 | Growth above trend | FY2022 to FY2025 spending by agency and code | growth 25+ points faster than the state's on the same code, on $500k+ | 10-30% of the growth above the state's pace |
 | Tail spend | FY2026 private-vendor payments by focus area | payments to vendors outside the ten largest, over $1M | 3-10% |
 | Leverage | FY2026 private-vendor payments | one vendor paid separately by 10+ agencies, $5M+ | 2-5% |
@@ -17,20 +17,20 @@ Findings at the same agency and spending code are listed once (the larger kept).
 
 ## Parity with the legacy pipeline
 
-On this pipeline's marts the port gives **exactly the legacy scripts' output**: 453 findings and a 30-vendor bid list (`tests/test_opportunities_parity.py` runs both on the same inputs). One deliberate difference: an agency's name is its latest one; the legacy script took whichever row came first, which depends on row order. Eleven tests on constructed cases (`tests/test_opportunities.py`) pin each rule, including the percentile, the cap, the tie-break between detectors and the exclusions, and run in CI.
+On this pipeline's marts the port gives **exactly the legacy scripts' output**: 453 findings and a 30-vendor bid list (`tests/test_opportunities_parity.py` runs both on the same inputs). Two deliberate differences: an agency's name is its latest one (the legacy script took whichever row came first, which depends on row order), and — in the live build only — the peer gap benchmarks against the agency's spending-mix cluster (`mart.agency_clusters`); the parity test calls the detector with `clusters=None`, which keeps the legacy statewide benchmark exactly. Fifteen tests on constructed cases (`tests/test_opportunities.py`) pin each rule, including the percentile, the cap, the tie-break between detectors, the exclusions and the cluster benchmark with its statewide fallback, and run in CI.
 
 ## What the numbers show (FY2025 and FY2026 data; current build)
 
 <!-- facts:opportunities -->
-_Generated from `mart.d_opps` and `mart.d_bid_list`, extract run 20261110T165637Z, by `python -m src.models.doc_facts`._
+_Generated from `mart.d_opps` and `mart.d_bid_list`, extract run 20261113T180346Z, by `python -m src.models.doc_facts`._
 
 | Detector | Findings | Likely saving | Range |
 |---|---|---|---|
-| Peer gap | 316 | $102.96M | $48.25M-$157.68M |
-| Growth above trend | 39 | $93.77M | $46.89M-$140.66M |
+| Peer gap | 308 | $96.79M | $45.44M-$148.14M |
+| Growth above trend | 40 | $93.87M | $46.94M-$140.81M |
 | Leverage | 38 | $27.40M | $15.66M-$39.14M |
 | Tail spend | 3 | $1.60M | $739,265-$2.46M |
-| **All** | **396** | **$225.74M** | **$111.53M-$339.94M** |
+| **All** | **389** | **$219.66M** | **$108.77M-$330.55M** |
 
 Bid list: 30 vendors, $12.04M-$30.10M.
 <!-- /facts:opportunities -->
@@ -39,26 +39,28 @@ Bid list: 30 vendors, $12.04M-$30.10M.
 
 **Do not read the total as the size of the opportunity.** Three reasons, all measured (the figures below are from the Nov 7, 2026 build at the legacy setting, $258.3M in all):
 
-1. **The findings are not additive.** The budget detectors flag $3.08B of baseline spending and the payment detectors $0.81B of the same money seen from the payments side; only the two budget detectors are de-duplicated against each other.
-2. **Some growth findings look like re-coding, not growth.** 38 of the growth detector's 166 findings grew 1,000% or more (for example Food Services at Public Safety and Correctional Services, +42,462%; Food at the Health department, +2,090%) and carry **$52.0M, 38% of that detector's $135.7M**. A line that jumps from a few thousand dollars to millions is more likely a budget line that was renamed or moved than a saving to chase. The build warns when this share exceeds 25% (it did at the legacy setting: 38%; with the $1M minimum it is 22%).
+**Do not read $219.7M as the size of the opportunity.** Three reasons, all measured:
+
+1. **The findings are not additive.** The budget detectors flag $2.78B of baseline spending and the payment detectors $0.81B of the same money seen from the payments side; only the two budget detectors are de-duplicated against each other.
+2. **Some growth findings look like re-coding, not growth.** At the legacy setting (no minimum prior-year base), 38 of the growth detector's 168 findings grew 1,000% or more (for example Food Services at Public Safety and Correctional Services, +42,462%; Food at the Health department, +2,090%) and carry **$52.0M, 38% of that setting's $135.8M**. A line that jumps from a few thousand dollars to millions is more likely a budget line that was renamed or moved than a saving to chase. The build warns when this share exceeds 25% (it did at the legacy setting: 38%; with the $1M minimum it is 22%).
 3. **The rates are assumptions.** The percentages are not evidence of what a renegotiation yields.
 
 **A minimum prior-year base removes most of the re-coding.** `opportunities.growth.min_base_budget` (default $1M since Nov 7, 2026; 0 is the legacy rule, which the parity test sets explicitly). Measured on this build:
 
 | Minimum prior-year spending | Growth findings kept | Growth likely saving kept |
 |---|---|---|
-| None (legacy) | 166 | $135.7M |
-| $100k | 134 | $122.1M (90%) |
-| $250k | 107 | $104.7M (77%) |
-| $1M (roadmap gap 7) | 39 | $93.8M (69%) |
+| None (legacy) | 168 | $135.8M |
+| $100k | 136 | $122.2M (90%) |
+| $250k | 109 | $104.9M (77%) |
+| $1M (roadmap gap 7) | 40 | $93.9M (69%) |
 
-**Applied Nov 7, 2026.** The minimum base is $1M, as the roadmap proposed (gap 7): 39 growth findings and $93.8M likely saving remain, and the share from findings that grew 1,000% or more fell from 38% to 22%, so the build check now passes. Findings still read as leads worth up to a range, not a total: the rates are screening assumptions. The legacy behaviour is one line in `config/assumptions.yaml`.
+**Applied Nov 7, 2026.** The minimum base is $1M, as the roadmap proposed (gap 7): 40 growth findings and $93.9M likely saving remain, and the share from findings that grew 1,000% or more fell from 38% to 22%, so the build check now passes. Findings still read as leads worth up to a range, not a total: the rates are screening assumptions. The legacy behaviour is one line in `config/assumptions.yaml`.
 
 ## Limits
 
 - Backtest, first stage only (below): flags are followed one year. Whether a flag leads to a saving has not been measured, and the rates have no evidence behind them beyond the legacy pipeline.
 - Public higher education (R13, R14, R30, R95) is left out of every input since Nov 9, 2026 (`gmi_baseline_exclusions` in `config/assumptions.yaml`): only R95 Baltimore City Community College appears in the payments data ($15.9M of FY2026 private payments). The likely saving fell by $0.11M ($225.84M to $225.74M: Leverage $27.48M to $27.40M, Tail spend $1.63M to $1.60M); the bid list stays 30 vendors ($12.06M-$30.16M to $12.04M-$30.10M).
-- Peer comparisons ignore mission: agencies differ, so a high spend per position can be legitimate. The tool only counts a share of the excess for that reason.
+- Peer comparisons benchmark each agency against its own spending-mix cluster since Nov 9, 2026, which only approximates mission: agencies differ, so a high spend per position can be legitimate. The tool only counts a share of the excess for that reason, and falls back to the statewide benchmark when an agency is unclustered or its cluster has fewer than 8 agencies with data on a code (105 of the 308 findings).
 - The vendor list is built from payee names grouped into companies (`reference/vendor_*.csv`); grouping errors carry through.
 - The not-biddable list is a name pattern (`bid_list.not_biddable`), so a vendor can be wrongly kept or dropped.
 
@@ -70,7 +72,7 @@ Findings are well formed (low at most high, no duplicate id, one per agency and 
 
 Code: `src/models/backtest.py`; table: `mart.d_detector_backtest` (24 rows: 4 detectors x 3 as-of years x 2 cohorts); tests: `tests/test_backtest.py` (the backtest's flags equal `detect()`'s findings, and nothing after the next year is read). Built and checked on every build.
 
-**Design, fixed before measuring.** Each detector is rerun as of FY2022, FY2023 and FY2024 on data up to that year only, with the live thresholds and the same look-back (growth compares year T with T-3; the payment detectors use year-T payments), and again as of T+1. Window: one year, T to T+1 (all actual years).
+**Design, fixed before measuring.** Each detector is rerun as of FY2022, FY2023 and FY2024 on data up to that year only, with the live thresholds and the same look-back (growth compares year T with T-3; the payment detectors use year-T payments), and again as of T+1. Window: one year, T to T+1 (all actual years). The peer-gap screen benchmarks statewide here: the spending-mix clusters are built on FY2025, the latest actual year, so no cluster assignment exists for the as-of years.
 
 | | Unit | Flagged cohort | Not-flagged cohort (same size and comparability filters, not flagged) | Spending followed |
 |---|---|---|---|---|

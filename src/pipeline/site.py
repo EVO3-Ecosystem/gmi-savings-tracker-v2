@@ -43,6 +43,9 @@ OUT = ROOT / "site"
 FIGURES = ROOT / "docs" / "figures"
 REPO = "https://github.com/EVO3-Ecosystem/gmi-savings-tracker"
 SITE_URL = "https://evo3-ecosystem.github.io/gmi-savings-tracker/"
+FY_NOTE = ("All years are Maryland State fiscal years (July 1 to June 30; FY2026 = July 1, 2025 to June 30, 2026), and "
+           "\"a year\" means one fiscal year. FY2027 began July 1, 2026, so its figures are partial.")
+BUILD_LABEL = os.environ.get("GMI_BUILD_LABEL", "")  # e.g. a sandbox or testing-ground build names itself and the flagship
 DISCLAIMER = "Independent prototype by Sierra Napier, built from Maryland's open data; not an official State of Maryland product"
 
 # the harness's start-up line (legacy/gst/scripts/page_test.py STUB), replaced by the fetch loader below
@@ -133,7 +136,8 @@ def header(src, sha):
     when = ", ".join(b for b in bits if b)
     ref = f'commit <a href="{REPO}/commit/{sha}"><code>{sha[:7]}</code></a>' if sha else "commit unknown"
     return ('<div id="site-head" style="border-bottom:1px solid var(--color-border-line);padding:8px 0;font:13px/1.45 ui-sans-serif,system-ui,sans-serif;color:var(--color-fg-muted)">'
-            f"<b>{html.escape(DISCLAIMER)}.</b> {when}. Built from {ref} of "
+            + (f"<b>{html.escape(BUILD_LABEL)}</b> " if BUILD_LABEL else "")
+            + f"<b>{html.escape(DISCLAIMER)}.</b> {when}. {html.escape(FY_NOTE)} Built from {ref} of "
             f'<a href="{REPO}">EVO3-Ecosystem/gmi-savings-tracker</a> · <a href="about.html">About the pipeline</a> · <a href="explorer.html">Data explorer</a> · <a href="catalog.html">Database catalog</a> · <a href="ai.html">AI layer</a>'
             '<span id="site-status"> Loading data…</span></div>')
 
@@ -248,7 +252,7 @@ def page(title, body, desc, head="", wide=False):
     cls = ' class="wide"' if wide else ""
     return (f'<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
             f'<title>{html.escape(title)}</title><meta name="description" content="{html.escape(desc)}">{PAGE_CSS}{head}</head>'
-            f'<body><main{cls}><p class="note">{html.escape(DISCLAIMER)}. {NAV} · <a href="{REPO}">Source code</a></p>{body}</main></body></html>')
+            f'<body><main{cls}><p class="note">{html.escape(DISCLAIMER)}. {html.escape(FY_NOTE)} {NAV} · <a href="{REPO}">Source code</a></p>{body}</main></body></html>')
 
 
 TEXT_EXT = {".html", ".csv", ".txt", ".js", ".css", ".json", ".md", ".svg"}

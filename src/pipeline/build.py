@@ -13,7 +13,7 @@ from pathlib import Path
 import duckdb
 import pandas as pd
 
-from ..models import backtest, forecast, grant_groups, opportunities, payee_classifier, recommendations, savings
+from ..models import anomaly, backtest, challenger, clustering, forecast, grant_clusters, grant_groups, opportunities, payee_classifier, recommendations, revenue, savings
 from . import checks, facts, marts, reference
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -38,7 +38,7 @@ def build(run_id):
     # ---- raw: portal rows exactly as delivered, plus the run ID; and the context sources
     for d in man["datasets"]:
         con.execute(f"CREATE TABLE raw.{d['dataset']} AS SELECT *, '{run_id}' AS _run_id FROM read_parquet('{raw}/{d['dataset']}.parquet')")
-    for name in ("cpi", "federal_awards", "population", "mfr_index"):
+    for name in ("cpi", "federal_awards", "population", "mfr_index", "bls_employment", "bea_md_gdp"):
         if (raw / f"{name}.parquet").exists():
             con.execute(f"CREATE TABLE raw.{name} AS SELECT *, '{run_id}' AS _run_id FROM read_parquet('{raw}/{name}.parquet')")
 
@@ -137,6 +137,13 @@ def build(run_id):
           'USAspending: federal grants (types 02-05) to government recipients located in Maryland' AS definition FROM raw.federal_awards""")
     if "population" in _tables(con, "raw"):
         con.execute("CREATE TABLE core.fact_population AS SELECT year AS calendar_year, year + 1 AS fiscal_year, population, vintage FROM raw.population")
+    # Outside economic data (#23), calendar-year series mapped to the fiscal year they mostly overlap (like population)
+    if "bls_employment" in _tables(con, "raw"):
+        con.execute("""CREATE TABLE core.fact_md_employment AS SELECT year AS calendar_year, year + 1 AS fiscal_year,
+          avg(employment_thousands) AS employment_thousands, count(*) AS months FROM raw.bls_employment GROUP BY year""")
+    if "bea_md_gdp" in _tables(con, "raw"):
+        con.execute("""CREATE TABLE core.fact_md_gdp AS SELECT calendar_year, calendar_year + 1 AS fiscal_year, real_gdp_millions
+          FROM raw.bea_md_gdp""")
     if "mfr_index" in _tables(con, "raw"):
         con.execute("""CREATE TABLE core.mfr_document AS SELECT fiscal_year, agency_file,
           replace(replace(agency_file, '-MFR.pdf', ''), '-', ' ') AS agency_title, url, bytes, last_modified FROM raw.mfr_index""")
@@ -144,18 +151,24 @@ def build(run_id):
     reference.build(con, raw)  # Phase 3: reference CSVs -> ref layer, mapped payments, budget scope, MFR measures
     marts.build(con)  # Phase 4: sql/mart/*.sql -> mart layer
     forecast.write(con)  # Phase 5: forecasts and their rolling-origin backtest, built on the marts
+    challenger.write(con)  # Phase 5: LightGBM quantile challenger, kept only where it beats naive
+    revenue.write(con)  # Phase 5: General Fund revenue forecast from the sourced closeout/BRE history
+    clustering.write(con)  # Phase 5: K-Means peer groups from the latest actual year's spending mix
+    grant_clusters.write(con)  # Phase 5 (#33): grant descriptions clustered into program families
     opportunities.write(con)  # Phase 5: opportunity detectors and the bid list
     backtest.write(con)  # Phase 5: the detectors rerun as of FY2022-FY2024, flags followed one year (mart.d_detector_backtest)
     savings.write(con, run_id, DATA)  # Phase 5: GMI's reported savings checked against payments
     recommendations.write(con, run_id, DATA)  # Phase 5: the six recommendations, the path to $50M, vendor drill-downs
     payee_classifier.write(con)  # ML layer: payee type labels vs the name rules (docs/models/payee_classifier.md)
     grant_groups.write(con)  # ML layer: grant descriptions grouped across grantor agencies, overlap leads (docs/models/grant_groups.md)
+    anomaly.write(con)  # Phase 5 (from v2): isolation-forest flags and the review queue (needs d_opps and d_bid_list)
     res = checks.run(con._con, run_id, man)  # the checks record their own reads (ops.check_coverage), outside the lineage
     facts.build(con, run_id, man, DATA, checks.HIST)  # Data & pipeline tab: sources, runs, checks, master-list quality
     if res:
         savings.record(con, run_id, DATA)  # status history only for a build that passed its checks
         recommendations.record(con, run_id, DATA)
         checks.record_payees(con, run_id, DATA)  # payee-name history (ops.payee_name_seen), likewise
+        anomaly.record(con, run_id, DATA)
     con.write()
     con.close()
     if res:

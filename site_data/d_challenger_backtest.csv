@@ -1,0 +1,7 @@
+origin_fy,model,series_scored,mean_mase,coverage_80,mean_width_log
+2022,LightGBM quantile (global),2173,10.93,0.72,1.57
+2022,Naive (last actual),2173,11.55,0.33,0.95
+2023,LightGBM quantile (global),2178,3.13,0.74,1.57
+2023,Naive (last actual),2178,3.62,0.44,1.24
+2024,LightGBM quantile (global),2161,3.15,0.74,1.57
+2024,Naive (last actual),2161,3.44,0.53,1.42
