@@ -16,7 +16,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 SCH = ROOT / "docs" / "schemas"
-REPO = "https://github.com/EVO3-Ecosystem/gmi-savings-tracker"
+REPO = "https://github.com/EVO3-Ecosystem/gmi-savings-tracker-v3"
 
 LAYERS = {
     "raw": "Portal rows exactly as delivered, plus the extract run ID; never edited.",

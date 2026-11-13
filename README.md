@@ -1,7 +1,9 @@
-# GMI Savings Tracker v2
+# GMI Savings Tracker v3
 
-[![CI](https://github.com/EVO3-Ecosystem/gmi-savings-tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/EVO3-Ecosystem/gmi-savings-tracker/actions/workflows/ci.yml)
-[![Pages](https://github.com/EVO3-Ecosystem/gmi-savings-tracker/actions/workflows/pages.yml/badge.svg)](https://evo3-ecosystem.github.io/gmi-savings-tracker/)
+> **Testing ground (v3).** Every upgrade is built, tested and scored here first; a change reaches the flagship, [gmi-savings-tracker](https://github.com/EVO3-Ecosystem/gmi-savings-tracker) ([live site](https://evo3-ecosystem.github.io/gmi-savings-tracker/)), only after it scores 5 of 5 and is approved.
+
+[![CI](https://github.com/EVO3-Ecosystem/gmi-savings-tracker-v3/actions/workflows/ci.yml/badge.svg)](https://github.com/EVO3-Ecosystem/gmi-savings-tracker-v3/actions/workflows/ci.yml)
+[![Pages](https://github.com/EVO3-Ecosystem/gmi-savings-tracker-v3/actions/workflows/pages.yml/badge.svg)](https://evo3-ecosystem.github.io/gmi-savings-tracker-v3/)
 <!-- facts:badges -->
 ![Data checks](https://img.shields.io/badge/data%20checks-131%20of%20132%20pass%2C%200%20fail-2da44e) ![Data as of](https://img.shields.io/badge/data%20as%20of-2026--11--13-0969da)
 <!-- /facts:badges -->
@@ -14,7 +16,7 @@ An independent check of Maryland's Government Modernization Initiative (GMI). It
 
 ## Live demo
 
-**https://evo3-ecosystem.github.io/gmi-savings-tracker/**
+**https://evo3-ecosystem.github.io/gmi-savings-tracker-v3/**
 
 | Page | What it shows |
 |---|---|
@@ -25,20 +27,20 @@ An independent check of Maryland's Government Modernization Initiative (GMI). It
 
 Every number on these pages is computed from the published data files. Click a screenshot to open that page.
 
-<a href="https://evo3-ecosystem.github.io/gmi-savings-tracker/"><img src="docs/figures/readme/overview.png" alt="Dashboard overview: FY2026 against FY2025, with the computed finding at the top"></a>
+<a href="https://evo3-ecosystem.github.io/gmi-savings-tracker-v3/"><img src="docs/figures/readme/overview.png" alt="Dashboard overview: FY2026 against FY2025, with the computed finding at the top"></a>
 
 <table>
 <tr>
-<td width="50%"><a href="https://evo3-ecosystem.github.io/gmi-savings-tracker/"><img src="docs/figures/readme/savings.png" alt="Savings tracker: reported items grouped as saved, under way and projected"></a><br><b>Savings tracker.</b> GMI's 17 items grouped by how the report words them; the four saved items equal its $29M.</td>
-<td width="50%"><a href="https://evo3-ecosystem.github.io/gmi-savings-tracker/"><img src="docs/figures/readme/payment_screen.png" alt="Payment screen: leads by year and confidence, source issues shown separately"></a><br><b>Payment screen.</b> 8 leads by confidence; the FY2022 double listing is shown as a source issue, never a lead.</td>
+<td width="50%"><a href="https://evo3-ecosystem.github.io/gmi-savings-tracker-v3/"><img src="docs/figures/readme/savings.png" alt="Savings tracker: reported items grouped as saved, under way and projected"></a><br><b>Savings tracker.</b> GMI's 17 items grouped by how the report words them; the four saved items equal its $29M.</td>
+<td width="50%"><a href="https://evo3-ecosystem.github.io/gmi-savings-tracker-v3/"><img src="docs/figures/readme/payment_screen.png" alt="Payment screen: leads by year and confidence, source issues shown separately"></a><br><b>Payment screen.</b> 8 leads by confidence; the FY2022 double listing is shown as a source issue, never a lead.</td>
 </tr>
 <tr>
-<td><a href="https://evo3-ecosystem.github.io/gmi-savings-tracker/ai.html"><img src="docs/figures/readme/ai_layer.png" alt="AI layer page"></a><br><b>AI layer.</b> Each model with its baseline, result and limits.</td>
-<td><a href="https://evo3-ecosystem.github.io/gmi-savings-tracker/explorer.html"><img src="docs/figures/readme/explorer.png" alt="Data explorer running SQL in the browser"></a><br><b>Data explorer.</b> SQL over every published table, in the browser.</td>
+<td><a href="https://evo3-ecosystem.github.io/gmi-savings-tracker-v3/ai.html"><img src="docs/figures/readme/ai_layer.png" alt="AI layer page"></a><br><b>AI layer.</b> Each model with its baseline, result and limits.</td>
+<td><a href="https://evo3-ecosystem.github.io/gmi-savings-tracker-v3/explorer.html"><img src="docs/figures/readme/explorer.png" alt="Data explorer running SQL in the browser"></a><br><b>Data explorer.</b> SQL over every published table, in the browser.</td>
 </tr>
 <tr>
-<td><a href="https://evo3-ecosystem.github.io/gmi-savings-tracker/catalog.html"><img src="docs/figures/readme/catalog.png" alt="Database catalog"></a><br><b>Database catalog.</b> Every table, column, check and lineage.</td>
-<td><a href="https://evo3-ecosystem.github.io/gmi-savings-tracker/"><img src="docs/figures/readme/calculator.png" alt="Calculator with the path to $50.2M"></a><br><b>Calculator.</b> The conditional path to $50.2M, with each assumption adjustable.</td>
+<td><a href="https://evo3-ecosystem.github.io/gmi-savings-tracker-v3/catalog.html"><img src="docs/figures/readme/catalog.png" alt="Database catalog"></a><br><b>Database catalog.</b> Every table, column, check and lineage.</td>
+<td><a href="https://evo3-ecosystem.github.io/gmi-savings-tracker-v3/"><img src="docs/figures/readme/calculator.png" alt="Calculator with the path to $50.2M"></a><br><b>Calculator.</b> The conditional path to $50.2M, with each assumption adjustable.</td>
 </tr>
 </table>
 

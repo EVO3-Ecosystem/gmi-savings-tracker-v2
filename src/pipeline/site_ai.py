@@ -22,7 +22,7 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
-REPO = "https://github.com/EVO3-Ecosystem/gmi-savings-tracker"
+REPO = "https://github.com/EVO3-Ecosystem/gmi-savings-tracker-v3"
 DOCS = ROOT / "docs"
 GOLDEN_YAML = ROOT / "tests" / "fixtures" / "mcp_golden.yaml"
 GOLDEN_RESULTS = DOCS / "mcp_golden_results.json"  # used when present; otherwise the golden set is run during the build
