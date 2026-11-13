@@ -43,7 +43,9 @@ def test_bid_list_matches_the_legacy_script():
     recs = _legacy("recs")
     names = agency_year.sort_values("fiscal_year").groupby("agency_code").agency.last()
     old = recs.bid_list(recs._ops(_legacy_payments(payments)), names)
-    new = O.bid_list(payments, agency_year)
+    cfg = O.assumptions()  # decision D2 (Nov 13, 2026) drops two non-profits and a court by name; undone here to compare with legacy
+    cfg["bid_list"]["not_biddable"] = cfg["bid_list"]["not_biddable"].replace("|HUMANIM|LEAGUE FOR PEOPLE|CIRCUIT C(OUR)?T", "")
+    new = O.bid_list(payments, agency_year, cfg)
     pd.testing.assert_frame_equal(new[old.columns].reset_index(drop=True), old.reset_index(drop=True), check_dtype=False)
 
 

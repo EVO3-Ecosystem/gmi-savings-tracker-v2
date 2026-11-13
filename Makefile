@@ -1,6 +1,7 @@
 PY ?= python3
 extract:  ; $(PY) -m src.pipeline.extract
 extract-full: ; $(PY) -m src.pipeline.extract --force
+extract-scheduled: ; $(PY) -m src.pipeline.extract --require-token   # scheduled runs: stop without a Socrata app token (decision D5)
 gate1:    ; $(PY) -m src.pipeline.extract --gate
 build:    ; $(PY) -m src.pipeline.build
 gate3:    ; $(PY) -m pytest -q tests/test_reference.py
@@ -29,4 +30,4 @@ site-artifact: ; $(PY) -m src.pipeline.site --artifact $(or $(ARTIFACT_OUT),$${T
 docs-strict: ; $(PY) -m src.pipeline.governance --strict $(if $(DASH),--dashboard $(DASH))
 
 .PHONY: readme-shots
-.PHONY: extract extract-full gate1 build gate3 all test test-fault docs docs-strict reconcile figures diagrams parity export snapshot restore site site-snapshot site-artifact postgres
+.PHONY: extract extract-full gate1 build gate3 all test test-fault docs docs-strict reconcile figures diagrams parity export snapshot restore site site-snapshot site-artifact postgres extract-scheduled

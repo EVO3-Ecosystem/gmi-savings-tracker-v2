@@ -125,7 +125,6 @@ def run(con, run_id, manifest):
     phase5_econ(con, check, one)
     phase5_state_plan(con, check, one)
     phase5_ola(con, check, one)
-    phase5_grant_clusters(con, check, one)
     phase5_higher_education(con, check, one, "highered" in loaded)
     phase5_deflator(con, check, one)
     phase5_payment_screen(con, check, one)
@@ -596,27 +595,6 @@ def phase5_ola(con, check, one):
     m = one("SELECT count(*) FROM mart.ola_findings") if one(
         "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'mart' AND table_name = 'ola_findings'") else 0
     check("mart", "OLA findings mart carries every audited agency", m == n, f"{m} mart rows of {n} reference rows", "warn")
-
-
-def phase5_grant_clusters(con, check, one):
-    """Grant program families (decision register #33): every described grant assigned exactly once, k inside the
-    documented heuristic range, every family named by its top terms, and the family summary ties to the assignments."""
-    if not one("SELECT count(*) FROM information_schema.tables WHERE table_schema = 'mart' AND table_name = 'grant_clusters'"):
-        return
-    from ..models import grant_clusters as gc
-    n, ids = con.execute("SELECT count(*), count(DISTINCT grant_id) FROM mart.grant_clusters").fetchone()
-    src = one("SELECT count(*) FROM core.fact_grant WHERE nullif(trim(description), '') IS NOT NULL")
-    check("mart", "Every described grant has exactly one program family", n == ids == src,
-          f"{n:,} assignments, {ids:,} distinct ids, {src:,} described grants in core")
-    k = one("SELECT max(k_chosen) FROM mart.grant_clusters")
-    blank = one("SELECT count(*) FROM mart.grant_clusters WHERE trim(family) = '' OR trim(top_terms) = ''")
-    check("mart", "Grant family k follows the documented heuristic and every family is named by its top terms",
-          gc.K_MIN <= k <= gc.K_MAX and blank == 0, f"k = {k} (range {gc.K_MIN}-{gc.K_MAX}), {blank} rows without a family name or top terms")
-    fam = one("SELECT coalesce(sum(grants), 0) FROM mart.grant_families")
-    orphan = one("""SELECT count(*) FROM (SELECT cluster FROM mart.grant_clusters GROUP BY 1) c
-        LEFT JOIN mart.grant_families f USING (cluster) WHERE f.cluster IS NULL""")
-    check("mart", "Grant family summary ties to the assignments", fam == n and orphan == 0,
-          f"{fam:,} grants in {one('SELECT count(*) FROM mart.grant_families')} families; {orphan} clusters without a family row")
 
 
 def phase5_higher_education(con, check, one, loaded):

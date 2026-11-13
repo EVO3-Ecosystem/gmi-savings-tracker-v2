@@ -226,8 +226,6 @@ mart.f_vendor_detail,ref.map_mfr_agency
 mart.f_vendor_pay,mart.d_vendors
 mart.f_vendor_pay,mart.vendor_agency_year
 mart.f_vendor_year,mart.vendor_agency_year
-mart.grant_clusters,core.fact_grant
-mart.grant_families,core.fact_grant
 mart.ola_findings,ref.dim_agency
 mart.ola_findings,ref.ola_findings
 mart.payment_area,core.fact_payment_mapped

@@ -1,7 +1,7 @@
 # Data governance — GMI Savings Tracker
 
 <!-- gen:stamp -->
-_Generated 2026-11-13T18:28Z by `python -m src.pipeline.governance`. Source schemas from the Discovery API, read Nov 13, 2026._
+_Generated 2026-11-13T19:30Z by `python -m src.pipeline.governance`. Source schemas from the Discovery API, read Nov 13, 2026._
 <!-- /gen:stamp -->
 
 The rules for where the tracker's data comes from, what every column means, who can change what, and how every figure is backed by a source. The schema sections are rebuilt from the sources on every run (`python -m src.pipeline.governance`), so they can't fall out of date. The policy sections are written by hand.
@@ -116,7 +116,7 @@ Every mapping rule, scope rule and manual decision is a CSV in `reference/`, rev
 | `function_exceptions.csv` | Payment accounts the operating budget data doesn't carry (capital accounts, independent authorities), named instead of given a function |
 | `column_dictionary.csv` | The definition of every column (this document) |
 
-**Public higher education and GMI savings baselines (Nov 9, 2026).** The four higher-education agencies (4mca-332u) are kept out of every savings baseline: the budget detectors never see them (they are not in yu65-jmmv), and `config/assumptions.yaml` (`gmi_baseline_exclusions`, `savings.vendor_moves.excluded_agency_codes`) drops their payments (only R95 appears in the payments data, about $16M of private payments a year) from the payment detectors, the bid list and the vendor moves. A stop check on every build confirms it. Their budget appears only in the all-funds total labeled "including public higher education" (`mart.d_all_funds`, `d_all_funds.csv`). The reason given in the roadmap, that these institutions buy under their own procurement authority outside the executive-branch procurement GMI works through, **rests on statute citations that have not been verified**; no citation is published until it is checked against the Annotated Code of Maryland (State Finance and Procurement Article) and the institutions' own procurement policies.
+**Public higher education and GMI savings baselines (Nov 9, 2026).** The four higher-education agencies (4mca-332u) are kept out of every savings baseline: the budget detectors never see them (they are not in yu65-jmmv), and `config/assumptions.yaml` (`gmi_baseline_exclusions`, `savings.vendor_moves.excluded_agency_codes`) drops their payments (only R95 appears in the payments data, about $16M of private payments a year) from the payment detectors, the bid list and the vendor moves. A stop check on every build confirms it. Their budget appears only in the all-funds total labeled "including public higher education" (`mart.d_all_funds`, `d_all_funds.csv`). The reason given in the roadmap, that these institutions buy under their own procurement authority outside the executive-branch procurement GMI works through, is verified (Nov 13, 2026, decision D4): Md. Code, State Finance and Procurement § 11-203(e)(2) says Division II (procurement) does not apply to the University System of Maryland, Morgan State University, St. Mary's College of Maryland or Baltimore City Community College, which follow their own procurement policies under § 11-203(e)(3) ([statute text, Maryland General Assembly](https://mgaleg.maryland.gov/mgawebsite/Laws/StatuteText?article=gsf&section=11-203&enactments=false)). Some Division II provisions still apply to them under § 11-203(e)(5); none bears on GMI's savings baselines.
 
 **Deferred (Nov 9, 2026):** `mart.payment_area` holds one row per payment, so `mart.payment_line` would be the accurate name (roadmap gap 10). The rename is deferred: eight marts and three models read it by name. `core.fact_fund` now keeps unit and program (the other half of gap 10).
 
@@ -127,7 +127,7 @@ Portal views reproduced as marts: where it's going (`mart.f_program`, budget by 
 - Every reported saving has a source, URL, page and verbatim quote in `reference/gmi_reported_savings.csv`. The run fails if any is missing ("Every reported savings item cites its source and page").
 - A figure the sources don't publish is not filled in. For example, GMI names four contract types under the $18M but no vendors and no split, so the tracker checks payment categories and labels each match as a best match.
 - Cost avoidance (DGS $326.3M) is kept apart from recurring yearly savings.
-- **Needs verification before publishing:** the procurement-statute citations for leaving public higher education out of GMI's scope (section 6). The pipeline publishes none.
+- **Verified Nov 13, 2026:** the procurement-statute citation for leaving public higher education out of GMI's scope, Md. Code SF&P § 11-203(e)(2) (section 6).
 
 ## 8. Assumptions register
 
@@ -770,7 +770,7 @@ Also saved as CSV in `docs/schemas/` (`source_columns.csv`, `warehouse_columns.c
 | spend | DOUBLE | derived | Dollars spent (budget actuals or payments) |
 | rank | BIGINT | derived | Rank of the vendor within its area and year by spend |
 
-**mart.d_bid_list** (30 rows)
+**mart.d_bid_list** (27 rows)
 
 | column | type | origin | definition |
 |---|---|---|---|
@@ -1088,7 +1088,7 @@ Also saved as CSV in `docs/schemas/` (`source_columns.csv`, `warehouse_columns.c
 | reviewed_leads | BIGINT | derived | Payment leads the evidence review reached a status for (not unreviewed) |
 | confirmed_leads | BIGINT | derived | Payment leads the evidence review marked confirmed_duplicate_in_source |
 
-**mart.d_plan50** (28 rows)
+**mart.d_plan50** (30 rows)
 
 | column | type | origin | definition |
 |---|---|---|---|
@@ -1229,7 +1229,7 @@ Also saved as CSV in `docs/schemas/` (`source_columns.csv`, `warehouse_columns.c
 | payee_name | VARCHAR | derived | One payee name grouped into the vendor |
 | fy2026 | DOUBLE | derived | Payments in FY2026 |
 
-**mart.d_vendors** (3,640 rows)
+**mart.d_vendors** (3,638 rows)
 
 | column | type | origin | definition |
 |---|---|---|---|
@@ -1420,7 +1420,7 @@ Also saved as CSV in `docs/schemas/` (`source_columns.csv`, `warehouse_columns.c
 | grant_rows_in_payments | BIGINT | derived | Grant rows whose grantee is also a payee that year |
 | payments_to_budget_share | DOUBLE | derived | Payments divided by the operating budget at its latest stage (a cross-check; the two measure different things) |
 
-**mart.f_payee_type** (5,927 rows)
+**mart.f_payee_type** (5,928 rows)
 
 | column | type | origin | definition |
 |---|---|---|---|
@@ -1492,7 +1492,7 @@ Also saved as CSV in `docs/schemas/` (`source_columns.csv`, `warehouse_columns.c
 | fiscal_year | INTEGER | portal | Maryland fiscal year (July 1 to June 30), named for the year it ends |
 | paid | DOUBLE | derived | Payments in dollars |
 
-**mart.f_vendor_pay** (30,845 rows)
+**mart.f_vendor_pay** (30,800 rows)
 
 | column | type | origin | definition |
 |---|---|---|---|
@@ -1511,37 +1511,6 @@ Also saved as CSV in `docs/schemas/` (`source_columns.csv`, `warehouse_columns.c
 | top10_share | DOUBLE | derived | Share of non-government payments held by the 10 largest vendors that year |
 | top100_share | DOUBLE | derived | Share of non-government payments held by the 100 largest vendors that year |
 | vendors_1m | BIGINT | derived | Non-government vendors paid $1M or more that year |
-
-**mart.grant_clusters** (23,084 rows)
-
-| column | type | origin | definition |
-|---|---|---|---|
-| grant_id | VARCHAR | derived | Stable identifier of a grants row: hash of fiscal year, grantor, grantee, description, amount and ZIP as published |
-| fiscal_year | INTEGER | portal | Maryland fiscal year (July 1 to June 30), named for the year it ends |
-| grantor | VARCHAR | portal | State agency and program awarding the grant or loan |
-| grantee | VARCHAR | portal | Recipient of the grant or loan |
-| description | VARCHAR | portal | Grant or loan program description as the grantor published it (free text, as listed) |
-| category | VARCHAR | portal | Grant or Loan |
-| nonprofit | VARCHAR | portal | Y when the portal marks the grantee as a non-profit |
-| zipcode | VARCHAR | portal | Grantee ZIP code as published |
-| amount | DOUBLE | portal | Dollars paid, awarded or reported on the row; nominal dollars |
-| cluster | INTEGER | derived | K-Means cluster of the grant description's TF-IDF vector (k by the documented sqrt heuristic, fixed seed) |
-| family | VARCHAR | derived | Grant program family: the K-Means cluster of the description's TF-IDF vector, named by its two highest-weight centroid terms |
-| top_terms | VARCHAR | derived | The family's five highest-weight terms by cluster centroid (the auditable label) |
-| k_chosen | BIGINT | derived | The number of families chosen by the documented heuristic (sqrt of half the corpus, clamped to 5-40) |
-
-**mart.grant_families** (40 rows)
-
-| column | type | origin | definition |
-|---|---|---|---|
-| cluster | INTEGER | derived | K-Means cluster of the grant description's TF-IDF vector (k by the documented sqrt heuristic, fixed seed) |
-| family | VARCHAR | derived | Grant program family: the K-Means cluster of the description's TF-IDF vector, named by its two highest-weight centroid terms |
-| top_terms | VARCHAR | derived | The family's five highest-weight terms by cluster centroid (the auditable label) |
-| grants | BIGINT | derived | Described grants assigned to the family |
-| grantees | BIGINT | derived | Distinct grantees in the family |
-| total_amount | DOUBLE | derived | Grant dollars in the family, all years, nominal |
-| first_fy | INTEGER | derived | First fiscal year the code appears |
-| last_fy | INTEGER | derived | Last fiscal year the code appears |
 
 **mart.measures** (14 rows)
 
@@ -1644,7 +1613,7 @@ Also saved as CSV in `docs/schemas/` (`source_columns.csv`, `warehouse_columns.c
 | source | VARCHAR | derived | Which model grain was scored (Vendor-agency payments or Agency spending code) |
 | scored | BIGINT | derived | Rows the isolation forest scored in that grain |
 
-**mart.run_checks** (135 rows)
+**mart.run_checks** (132 rows)
 
 | column | type | origin | definition |
 |---|---|---|---|
@@ -1823,7 +1792,7 @@ Also saved as CSV in `docs/schemas/` (`source_columns.csv`, `warehouse_columns.c
 | payee_names | BIGINT | derived | Distinct payee names grouped into the vendor |
 | focus_area | VARCHAR | derived | One of GMI's six focus areas assigned by reference/focus_area_rules.csv; empty when none |
 
-**ops.check_coverage** (135 rows)
+**ops.check_coverage** (132 rows)
 
 | column | type | origin | definition |
 |---|---|---|---|
@@ -1831,7 +1800,7 @@ Also saved as CSV in `docs/schemas/` (`source_columns.csv`, `warehouse_columns.c
 | layer | VARCHAR | ops | Database layer the check ran on (raw, core, ref, mart) |
 | tables | VARCHAR | derived | Warehouse tables the check's queries read (recorded by src/pipeline/checks.py), space-separated |
 
-**ops.check_result** (135 rows)
+**ops.check_result** (132 rows)
 
 | column | type | origin | definition |
 |---|---|---|---|
@@ -1852,7 +1821,7 @@ Also saved as CSV in `docs/schemas/` (`source_columns.csv`, `warehouse_columns.c
 | rows | BIGINT | ops | Row count |
 | detail | VARCHAR | ops | Numbers behind the check result |
 
-**ops.lineage** (325 rows)
+**ops.lineage** (323 rows)
 
 | column | type | origin | definition |
 |---|---|---|---|
@@ -2097,7 +2066,7 @@ Also saved as CSV in `docs/schemas/` (`source_columns.csv`, `warehouse_columns.c
 | stage | VARCHAR | reference | Confirmed budget stage for the fiscal year (Actual, Working, Legislative Appropriation) from ref.budget_stage, or the pipeline layer in run_checks |
 | source | VARCHAR | reference | Where the reference value is documented |
 
-**ref.column_dictionary** (498 rows)
+**ref.column_dictionary** (612 rows)
 
 | column | type | origin | definition |
 |---|---|---|---|
@@ -3111,7 +3080,7 @@ Also saved as CSV in `docs/schemas/` (`source_columns.csv`, `warehouse_columns.c
 ## 12. Coverage and drift
 
 <!-- gen:coverage -->
-1,809 of 1,809 columns documented (85 source, 1282 warehouse, 442 dashboard).
+1,788 of 1,788 columns documented (85 source, 1261 warehouse, 442 dashboard).
 <!-- /gen:coverage -->
 
 **Source schema changes since the last snapshot:**

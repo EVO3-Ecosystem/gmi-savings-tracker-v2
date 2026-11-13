@@ -34,7 +34,7 @@ PARTIAL = {"totals_by_fy": "drop", "f_vendor": "drop", "f_payee_type": "drop", "
 # Decision-register additions published beside the dashboard datasets (#20 State Plan map, #21 OLA findings,
 # #23 outside economic context, #33 grant program families). Not in config/dashboard.yaml yet; exported when their
 # mart exists, flagged in the manifest.
-EXTRA = ("ola_findings", "d_state_plan", "d_econ", "grant_clusters", "grant_families")
+EXTRA = ("ola_findings", "d_state_plan", "d_econ")
 
 
 def _round(df):

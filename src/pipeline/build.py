@@ -13,7 +13,7 @@ from pathlib import Path
 import duckdb
 import pandas as pd
 
-from ..models import anomaly, backtest, challenger, clustering, forecast, grant_clusters, grant_groups, opportunities, payee_classifier, recommendations, revenue, savings
+from ..models import anomaly, backtest, challenger, clustering, forecast, grant_groups, opportunities, payee_classifier, recommendations, revenue, savings
 from . import checks, facts, marts, reference
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -154,7 +154,6 @@ def build(run_id):
     challenger.write(con)  # Phase 5: LightGBM quantile challenger, kept only where it beats naive
     revenue.write(con)  # Phase 5: General Fund revenue forecast from the sourced closeout/BRE history
     clustering.write(con)  # Phase 5: K-Means peer groups from the latest actual year's spending mix
-    grant_clusters.write(con)  # Phase 5 (#33): grant descriptions clustered into program families
     opportunities.write(con)  # Phase 5: opportunity detectors and the bid list
     backtest.write(con)  # Phase 5: the detectors rerun as of FY2022-FY2024, flags followed one year (mart.d_detector_backtest)
     savings.write(con, run_id, DATA)  # Phase 5: GMI's reported savings checked against payments

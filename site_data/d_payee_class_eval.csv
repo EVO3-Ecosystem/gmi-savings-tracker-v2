@@ -24,12 +24,12 @@ model,macro_f1,all,0.46,364
 model,dollars_classified_share,all,0.99,62022
 model,dollars_relabeled_share,all,0.06,62022
 model,accuracy_on_default_names,all,0.81,52
-model,precision,business,0.76,182
+model,precision,business,0.77,182
 model,recall,business,0.73,182
 model,f1,business,0.75,182
-model,precision,government,0.6,48
+model,precision,government,0.58,48
 model,recall,government,0.73,48
-model,f1,government,0.66,48
+model,f1,government,0.65,48
 model,precision,nonprofit,1.0,56
 model,recall,nonprofit,0.11,56
 model,f1,nonprofit,0.19,56
@@ -37,7 +37,7 @@ model,precision,individual/withheld,0.0,8
 model,recall,individual/withheld,0.0,8
 model,f1,individual/withheld,0.0,8
 model,precision,other,0.54,70
-model,recall,other,0.97,70
+model,recall,other,0.96,70
 model,f1,other,0.69,70
 combined,accuracy,all,0.71,364
 combined,macro_f1,all,0.56,364
@@ -65,4 +65,4 @@ sample,not_found,all,0.0,400
 sample,reviewed_by_sierra,all,0.0,400
 decision,combined_promoted,all,0.0,364
 model,training_names,all,61518.0,62022
-model,review_queue,all,1880.0,62022
+model,review_queue,all,2185.0,62022

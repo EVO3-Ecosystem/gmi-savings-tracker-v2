@@ -175,3 +175,17 @@ With Phase 3 (ML analytics) and the v2 dashboard merged, what is left, in order:
 5. Optional: `make postgres`, DVC local store, read-only MCP server over the marts, `docker compose up`, NAICS/eMMA/SAM.gov contract research, analyst-detail toggle, roadmap timeline figure, PDF report, Power BI measures.
 
 **Gates that already exist and stay in force:** export refuses a failed build; every model must beat or match its naive baseline or it is not adopted; page tests (36) and pytest (150+) run before any publish; every column documented (1,518/1,518).
+
+## Decisions closed Nov 13, 2026 (v3 decision record)
+
+| # | Decision | Choice |
+|---|---|---|
+| D1 | Duplicate grant clustering | Keep `grant_groups` (v1); retire `grant_clusters` (v2) — see `docs/models/grant_clusters.md` |
+| D2 | Humanim, League For People With Disabilities, Kent Circuit Ct on the bid list | Removed: two 501(c)(3) non-profits and a court |
+| D3 | MARYLAND CARE INC | Confirmed as Maryland Physicians Care (NCQA lists "Maryland Care Inc., d/b/a/ Maryland Physicians Care") |
+| D4 | Public higher education out of GMI baselines | Md. Code SF&P 11-203(e)(2) exempts USM, Morgan State, St. Mary's College and BCCC from Division II procurement |
+| D5 | Socrata app token | Register it; scheduled and CI extracts stop without it (`make extract-scheduled`) |
+| D6 | v2's `static.yml` | Delete; `pages.yml` is the only deploy workflow |
+| D7 | Ruleset and Dependabot | `.github/rulesets/main.json` to import; Dependabot updates grouped; alerts on (`docs/repo-settings.md`) |
+| D8 | Phase 8 (AI apps) | Required for 5 of 5 (Sierra, Nov 13, 2026: the panel asked for it). Gates: every model beats its baseline before it is shown; every chat answer cites its table; risks documented against the NIST AI RMF |
+| D9 | v3 promotion | Open: Sierra approves testing on v2 |

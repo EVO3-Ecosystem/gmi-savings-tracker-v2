@@ -113,9 +113,6 @@ Economic context mart covers every budget year and ties to the core series,mart,
 State Plan mart carries every mapped agency,mart,mart.d_state_plan
 "OLA findings: 10+ agencies, well-formed rows, every row cites its ola.maryland.gov report",ref,ref.dim_agency ref.ola_findings
 OLA findings mart carries every audited agency,mart,mart.ola_findings
-Every described grant has exactly one program family,mart,core.fact_grant mart.grant_clusters
-Grant family k follows the documented heuristic and every family is named by its top terms,mart,mart.grant_clusters
-Grant family summary ties to the assignments,mart,mart.grant_clusters mart.grant_families
 "Higher education dataset holds only its four agencies, none of them in the operating budget dataset",core,core.fact_budget core.fact_budget_highered
 "All-funds total including public higher education = operating budget + higher education (every year, to the dollar)",mart,core.fact_budget core.fact_budget_highered mart.d_all_funds ref.dim_stage
 Public higher education is kept out of every GMI savings baseline,mart,core.fact_budget_scope mart.d_opps mart.payment_area

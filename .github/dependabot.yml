@@ -1,9 +1,14 @@
 # Keeps the SHA-pinned GitHub Actions and the Python dependencies current (weekly pull requests).
+# Minor and patch updates arrive grouped, one pull request per ecosystem a week (decision D7); CI gates each one.
 version: 2
 updates:
   - package-ecosystem: github-actions
     directory: /
     schedule: {interval: weekly}
+    groups:
+      actions-minor-patch: {update-types: [minor, patch]}
   - package-ecosystem: pip
     directory: /
     schedule: {interval: weekly}
+    groups:
+      pip-minor-patch: {update-types: [minor, patch]}

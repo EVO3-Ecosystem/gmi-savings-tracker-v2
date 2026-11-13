@@ -1,4 +1,12 @@
-# Model card — Grant program families (`src/models/grant_clusters.py`)
+# RETIRED (Nov 13, 2026): Grant program families (`src/models/grant_clusters.py`)
+
+**Retired in v3 in favour of [grant groups](grant_groups.md); kept here as the record.** Decision D1 of the v3 decision record: K-Means
+needs the number of clusters set in advance and assumes convex, isotropic clusters (scikit-learn user guide, 2.3 Clustering),
+and this model's k was a rule of thumb with no validation (see "Honest limits" below). Grant groups use a sentence-embedding
+model built for clustering (all-MiniLM-L6-v2), an agglomerative cosine threshold set before looking, sensitivity at two other
+thresholds, a grantor alias map and a hand check, and they answer the question the dashboard asks (the same purpose funded by
+two agencies). The families table was never drawn on the dashboard. The code, checks, export and test were removed.
+
 
 ## What it does
 Clusters every grant with a description in the State's grants and loans data (`core.fact_grant`, FY2009-present)

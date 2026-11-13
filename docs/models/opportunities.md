@@ -32,7 +32,7 @@ _Generated from `mart.d_opps` and `mart.d_bid_list`, extract run 20261113T180346
 | Tail spend | 3 | $1.60M | $739,265-$2.46M |
 | **All** | **389** | **$219.66M** | **$108.77M-$330.55M** |
 
-Bid list: 30 vendors, $12.04M-$30.10M.
+Bid list: 27 vendors, $11.39M-$28.47M.
 <!-- /facts:opportunities -->
 
 (The counts above are written from the data on every `make docs`. The Nov 7, 2026 build's table read 246 peer-gap and 166 growth findings, 453 in all; the $1M growth base and the higher-education exclusion since then changed them. The parity sentence above refers to the legacy setting, which the parity test sets explicitly.)

@@ -174,5 +174,9 @@ if __name__ == "__main__":
     a = argparse.ArgumentParser()
     a.add_argument("--force", action="store_true", help="download every dataset even if the portal has not changed")
     a.add_argument("--gate", action="store_true", help="check the Phase 1 gate")
+    a.add_argument("--require-token", action="store_true",
+                   help="stop unless MD_SODA_APP_TOKEN is set (scheduled runs; decision D5: tokenless requests share a throttled IP pool)")
     args = a.parse_args()
+    if (args.require_token or os.environ.get("GMI_SCHEDULED")) and not os.environ.get("MD_SODA_APP_TOKEN"):
+        sys.exit("MD_SODA_APP_TOKEN is not set: scheduled extracts need a Socrata app token (https://dev.socrata.com/docs/app-tokens)")
     sys.exit(gate() if args.gate else run(args.force))

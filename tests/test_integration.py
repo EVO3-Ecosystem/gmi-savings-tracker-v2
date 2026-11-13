@@ -23,7 +23,7 @@ except ImportError as e:
     pytest.skip(f"src.pipeline.build not importable (concurrent edit in flight): {e}", allow_module_level=True)
 
 # Phase 5 model stages, whichever of them the current build.py wires in.
-MODEL_STAGES = ("forecast", "challenger", "revenue", "clustering", "grant_clusters", "opportunities",
+MODEL_STAGES = ("forecast", "challenger", "revenue", "clustering", "opportunities",
                 "backtest", "savings", "recommendations", "anomaly", "payee_classifier", "grant_groups")
 
 DASHBOARD_YAML = "\n".join(f"{n}: {n}" for n in
